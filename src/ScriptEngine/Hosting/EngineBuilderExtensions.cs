@@ -51,7 +51,7 @@ namespace ScriptEngine.Hosting
             services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             services.RegisterSingleton<RuntimeEnvironment>();
             services.RegisterSingleton<IRuntimeEnvironment>(sp => sp.Resolve<RuntimeEnvironment>());
-            services.RegisterSingleton<CompileTimeSymbolsProvider>();
+            services.RegisterSingleton<TypeSymbolsProviderFactory>();
             services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
             services.RegisterSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();
             
@@ -90,6 +90,12 @@ namespace ScriptEngine.Hosting
         public static IEngineBuilder WithDebugger(this IEngineBuilder b, IDebugController debugger)
         {
             b.Services.RegisterSingleton(debugger);
+            return b;
+        }
+
+        public static IEngineBuilder SetupServices(this IEngineBuilder b, Action<IServiceDefinitions> setup)
+        {
+            setup(b.Services);
             return b;
         }
     }
