@@ -15,40 +15,40 @@ using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Compiler;
+using System.Reflection;
 
 namespace ScriptEngine
 {
     public class ScriptingEngine : IDisposable
     {
+        private readonly ContextDiscoverer _contextDiscoverer;
+
         private AttachedScriptsFactory _attachedScriptsFactory;
         private IDebugController _debugController;
         private IRuntimeEnvironment _runtimeEnvironment;
-        
         private readonly ILibraryManager _libraryManager;
 
-        public ScriptingEngine(ITypeManager types,
-            IGlobalsManager globals,
-            RuntimeEnvironment env, 
+        public ScriptingEngine(
+            ITypeManager types,
+            IRuntimeEnvironment env, 
+            ILibraryManager libraryManager,
+            ContextDiscoverer contextDiscoverer,
             OneScriptCoreOptions options,
             IServiceContainer services)
         {
+            _contextDiscoverer = contextDiscoverer;
             TypeManager = types;
-            // FIXME: Пока потребители не отказались от статических инстансов, они будут жить и здесь
-            
-            GlobalsManager = globals;
+
             _runtimeEnvironment = env;
-            _libraryManager = env;
+            _libraryManager = libraryManager;
             
             Loader = new ScriptSourceFactory();
             Services = services;
-            ContextDiscoverer = new ContextDiscoverer(types, globals, services);
             DebugController = services.TryResolve<IDebugController>();
             Loader.ReaderEncoding = options.FileReaderEncoding;
         }
 
         public IServiceContainer Services { get; }
-
-        private ContextDiscoverer ContextDiscoverer { get; }
 
         public IRuntimeEnvironment Environment => _runtimeEnvironment;
 
@@ -56,58 +56,26 @@ namespace ScriptEngine
 
         public ITypeManager TypeManager { get; }
         
-        public IGlobalsManager GlobalsManager { get; }
-        
         private CodeGenerationFlags ProduceExtraCode { get; set; }
         
-        public void AttachAssembly(System.Reflection.Assembly asm, Predicate<Type> filter = null)
+        public void AttachAssembly(Assembly asm, Predicate<Type> filter = null)
         {
-            ContextDiscoverer.DiscoverClasses(asm, filter);
-            ContextDiscoverer.DiscoverGlobalContexts(Environment, asm, filter);
+            _contextDiscoverer.DiscoverClasses(asm, filter);
+            _contextDiscoverer.DiscoverGlobalContexts(asm, filter);
         }
 
-        public void AttachExternalAssembly(System.Reflection.Assembly asm, IRuntimeEnvironment globalEnvironment)
+        public void AttachExternalAssembly(Assembly asm)
         {
-            ContextDiscoverer.DiscoverClasses(asm);
-
-            //var lastCount = globalEnvironment.AttachedContexts.Count();
-            ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm);
-
-            //var newCount = globalEnvironment.AttachedContexts.Count();
-            // while (lastCount < newCount)
-            // {
-            //     MachineInstance.Current.AttachContext(globalEnvironment.AttachedContexts[lastCount]);
-            //     ++lastCount;
-            // }
-        }
-        
-        public void AttachExternalAssembly(System.Reflection.Assembly asm)
-        {
-            AttachExternalAssembly(asm, Environment);
+            _contextDiscoverer.DiscoverClasses(asm);
+            _contextDiscoverer.DiscoverGlobalContexts(asm);
         }
 
         public void Initialize()
         {
-            SetDefaultEnvironmentIfNeeded();
             EnableCodeStatistics();
-            UpdateContexts();
 
             _attachedScriptsFactory = new AttachedScriptsFactory(this);
             AttachedScriptsFactory.SetInstance(_attachedScriptsFactory);
-        }
-
-        public void UpdateContexts()
-        {
-            lock (this)
-            {
-                ExecutionDispatcher.Current ??= Services.Resolve<ExecutionDispatcher>();
-            }
-            MachineInstance.Current.SetMemory(Services.Resolve<ExecutionContext>());
-        }
-
-        private void SetDefaultEnvironmentIfNeeded()
-        {
-            _runtimeEnvironment ??= new RuntimeEnvironment();
         }
 
         public ScriptSourceFactory Loader { get; }
@@ -136,7 +104,7 @@ namespace ScriptEngine
             return compiler;
         }
         
-        public IRuntimeContextInstance NewObject(IExecutableModule module, ExternalContextData externalContext = null)
+        public static IRuntimeContextInstance NewObject(IExecutableModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = CreateUninitializedSDO(module, externalContext);
             InitializeSDO(scriptContext);
@@ -144,7 +112,7 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        public ScriptDrivenObject CreateUninitializedSDO(IExecutableModule module, ExternalContextData externalContext = null)
+        public static ScriptDrivenObject CreateUninitializedSDO(IExecutableModule module, ExternalContextData externalContext = null)
         {
             var scriptContext = new UserScriptContextInstance(module, true);
             if (externalContext != null)
@@ -159,15 +127,12 @@ namespace ScriptEngine
             return scriptContext;
         }
 
-        public void InitializeSDO(ScriptDrivenObject sdo)
+        public static void InitializeSDO(ScriptDrivenObject sdo)
         {
             sdo.Initialize();
         }
-        
-        public Task InitializeSDOAsync(ScriptDrivenObject sdo)
-        {
-            return sdo.InitializeAsync();
-        }
+
+        public static Task InitializeSDOAsync(ScriptDrivenObject sdo) => sdo.InitializeAsync();
 
         public AttachedScriptsFactory AttachedScriptsFactory => _attachedScriptsFactory;
 

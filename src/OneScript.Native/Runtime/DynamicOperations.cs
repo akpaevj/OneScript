@@ -142,13 +142,14 @@ namespace OneScript.Native.Runtime
             };
         }
         
-        public static BslValue ConstructorCall(ITypeManager typeManager, IServiceContainer services, string typeName, BslValue[] args)
+        public static BslValue ConstructorCall(IServiceContainer services, string typeName, BslValue[] args)
         {
+            var typeManager = services.Resolve<ITypeManager>();
+
             var type = typeManager.GetTypeByName(typeName);
             var factory = typeManager.GetFactoryFor(type);
             var context = new TypeActivationContext
             {
-                TypeManager = typeManager,
                 Services = services,
                 TypeName = type.Name
             };
@@ -157,10 +158,10 @@ namespace OneScript.Native.Runtime
         }
         
         // TODO: Сделать прямой маппинг на статические фабрики-методы, а не через Factory.Activate
-        public static T StrictConstructorCall<T>(ITypeManager typeManager, IServiceContainer services, string typeName, BslValue[] args)
+        public static T StrictConstructorCall<T>(IServiceContainer services, string typeName, BslValue[] args)
             where T : BslValue
         {
-            return (T) ConstructorCall(typeManager, services, typeName, args);
+            return (T) ConstructorCall(services, typeName, args);
         }
 
         public static BslObjectValue GetExceptionInfo(IExceptionInfoFactory factory, Exception e)

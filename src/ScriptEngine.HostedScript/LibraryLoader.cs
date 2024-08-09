@@ -45,8 +45,8 @@ namespace ScriptEngine.HostedScript
             _libManager = libManager;
             _engine = engine;
             _customized = true;
-            
-            _engine.InitializeSDO(this);
+
+            ScriptingEngine.InitializeSDO(this);
 
         }
 
@@ -125,14 +125,14 @@ namespace ScriptEngine.HostedScript
         public void LoadLibrary(string dllPath)
         {
             var assembly = System.Reflection.Assembly.LoadFrom(dllPath);
-            _engine.AttachExternalAssembly(assembly, _env);
+            _engine.AttachExternalAssembly(assembly);
 
         }
 
         [ContextMethod("ДобавитьМакет", "AddTemplate")]
         public void AddTemplate(string file, string name, TemplateKind kind = TemplateKind.File)
         {
-            var manager = _engine.GlobalsManager.GetInstance<TemplateStorage>();
+            var manager = _env.GlobalsManager.GetInstance<TemplateStorage>();
             manager.RegisterTemplate(file, name, kind);
         }
 
@@ -248,7 +248,7 @@ namespace ScriptEngine.HostedScript
                 classFile.Module = module;
             });
 
-            _libManager.InitExternalLibrary(_engine, library);
+            _libManager.InitExternalLibrary(library);
         }
 
         private IExecutableModule CompileFile(string path)
@@ -256,13 +256,13 @@ namespace ScriptEngine.HostedScript
             var compiler = _engine.GetCompilerService();
             
             var source = _engine.Loader.FromFile(path);
-            var module = _engine.AttachedScriptsFactory.CompileModuleFromSource(compiler, source, null);
+            var module = AttachedScriptsFactory.CompileModuleFromSource(compiler, source, null);
 
             return module;
         }
 
         private static Lazy<bool> TraceEnabled =
-            new Lazy<bool>(() => System.Environment.GetEnvironmentVariable("OS_LRE_TRACE") == "1");
+            new Lazy<bool>(() => Environment.GetEnvironmentVariable("OS_LRE_TRACE") == "1");
         
         public static void TraceLoadLibrary(string message)
         {

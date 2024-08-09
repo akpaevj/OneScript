@@ -497,7 +497,7 @@ namespace OneScript.Native.Compiler
                 $"Conversion from type {source.Type} into {targetType} is not supported"));
         }
 
-        public static Expression ConstructorCall(ITypeManager typeManager, Expression services, Expression type,
+        public static Expression ConstructorCall(Expression services, Expression type,
             Expression[] argsArray)
         {
             var method = OperationsCache.GetOrAdd(
@@ -507,13 +507,12 @@ namespace OneScript.Native.Compiler
             var arrayOfArgs = Expression.NewArrayInit(typeof(BslValue), argsArray.Select(ConvertToBslValue));
             
             return Expression.Call(method, 
-                Expression.Constant(typeManager),
                 services,
                 type,
                 arrayOfArgs);
         }
         
-        public static Expression ConstructorCall(ITypeManager typeManager, Expression services, TypeDescriptor knownType,
+        public static Expression ConstructorCall(Expression services, TypeDescriptor knownType,
             Expression[] argsArray)
         {
             MethodInfo method;
@@ -536,7 +535,6 @@ namespace OneScript.Native.Compiler
             var arrayOfArgs = Expression.NewArrayInit(typeof(BslValue), argsArray.Select(ConvertToBslValue));
             
             return Expression.Call(method, 
-                Expression.Constant(typeManager),
                 services,
                 Expression.Constant(knownType.Name),
                 arrayOfArgs);

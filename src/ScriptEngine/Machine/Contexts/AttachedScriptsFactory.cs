@@ -152,13 +152,13 @@ namespace ScriptEngine.Machine.Contexts
             _engine.TypeManager.RegisterType(typeName, default, typeof(AttachedScriptsFactory));
         }
         
-        private IRuntimeContextInstance LoadAndCreate(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext)
+        private static IRuntimeContextInstance LoadAndCreate(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext)
         {
             var module = CompileModuleFromSource(compiler, code, externalContext);
-            return _engine.NewObject(module, externalContext);
+            return ScriptingEngine.NewObject(module, externalContext);
         }
 
-        public IExecutableModule CompileModuleFromSource(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext)
+        public static IExecutableModule CompileModuleFromSource(ICompilerFrontend compiler, SourceCode code, ExternalContextData externalContext)
         {
             var scope = compiler.FillSymbols(typeof(UserScriptContextInstance));
             if (externalContext != null)
@@ -191,9 +191,11 @@ namespace ScriptEngine.Machine.Contexts
         [ScriptConstructor]
         public static UserScriptContextInstance ScriptFactory(TypeActivationContext context, IValue[] arguments)
         {
+            var typeManager = context.Services.Resolve<ITypeManager>();
+
             var module = _instance._loadedModules[context.TypeName];
 
-            var type = context.TypeManager.GetTypeByName(context.TypeName);
+            var type = typeManager.GetTypeByName(context.TypeName);
             UserScriptContextInstance newObj;
             if (module.GetInterface<IterableBslInterface>() != null)
             {

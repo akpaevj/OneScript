@@ -27,7 +27,7 @@ namespace OneScript.StandardLibrary.Xml
         private static readonly Dictionary<Type, EnumerationContext> _allowedEnums 
             = new Dictionary<Type, EnumerationContext>();
         
-        private XmlGlobalFunctions(IGlobalsManager mgr)
+        private XmlGlobalFunctions(IGlobalContextsManager mgr)
         {
             lock (_allowedEnums)
             {
@@ -179,7 +179,7 @@ namespace OneScript.StandardLibrary.Xml
             throw RuntimeException.InvalidNthArgumentType(1);
         }
         
-        public static IAttachableContext CreateInstance(IGlobalsManager mgr)
+        public static IAttachableContext CreateInstance(IGlobalContextsManager mgr)
         {
             return new XmlGlobalFunctions(mgr);
         }

@@ -14,11 +14,11 @@ namespace ScriptEngine.Machine
 {
     public class StackMachineExecutor : IExecutorProvider
     {
-        private readonly ExecutionContext _environment;
+        private readonly IMachineInstancePool _machineInstancePool;
 
-        public StackMachineExecutor(ExecutionContext environment)
+        public StackMachineExecutor(IMachineInstancePool machineInstancePool)
         {
-            _environment = environment;
+            _machineInstancePool = machineInstancePool;
         }
         
         public Type SupportedModuleType => typeof(StackRuntimeModule);
@@ -40,13 +40,7 @@ namespace ScriptEngine.Machine
                 throw new InvalidOperationException();
             }
             
-            var currentMachine = MachineInstance.Current;
-            if (!currentMachine.IsRunning)
-            {
-                currentMachine.SetMemory(_environment);
-            }
-            
-            return (BslValue)currentMachine.ExecuteMethod(runnable, scriptMethodInfo, arguments);
+            return (BslValue)_machineInstancePool.GetCurrentThreadInstance().ExecuteMethod(runnable, scriptMethodInfo, arguments);
         }
     }
 }

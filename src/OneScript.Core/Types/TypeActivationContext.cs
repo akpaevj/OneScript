@@ -12,8 +12,6 @@ namespace OneScript.Types
     public struct TypeActivationContext
     {
         public string TypeName { get; set; }
-        
-        public ITypeManager TypeManager { get; set; }
 
         public IServiceContainer Services { get; set; }
     }

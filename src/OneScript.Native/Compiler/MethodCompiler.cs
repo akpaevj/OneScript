@@ -1266,7 +1266,7 @@ namespace OneScript.Native.Compiler
 
         }
 
-        private Expression DirectClrCall(object target, MethodInfo clrMethod, IEnumerable<Expression> args)
+        private static Expression DirectClrCall(object target, MethodInfo clrMethod, IEnumerable<Expression> args)
         {
             return Expression.Call(Expression.Constant(target), clrMethod, args);   
         }
@@ -1499,13 +1499,13 @@ namespace OneScript.Native.Compiler
             }
             else
             {
-                parameters = new Expression[0];
+                parameters = Array.Empty<Expression>();
             }
 
             if (node.IsDynamic)
             {
                 var typeName = ConvertToExpressionTree(node.TypeNameNode);
-                var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeName, parameters);
+                var call = ExpressionHelpers.ConstructorCall(services, typeName, parameters);
                 _statementBuildParts.Push(call);
             }
             else
@@ -1514,13 +1514,13 @@ namespace OneScript.Native.Compiler
                 var isKnownType = CurrentTypeManager.TryGetType(typeNameString, out var typeDef);
                 if (isKnownType)
                 {
-                    var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeDef, parameters);
+                    var call = ExpressionHelpers.ConstructorCall(services, typeDef, parameters);
                     _statementBuildParts.Push(call);
                 }
                 else // это может быть тип, подключенный через ПодключитьСценарий
                 {
                     var typeName = Expression.Constant(typeNameString);
-                    var call = ExpressionHelpers.ConstructorCall(CurrentTypeManager, services, typeName, parameters);
+                    var call = ExpressionHelpers.ConstructorCall(services, typeName, parameters);
                     _statementBuildParts.Push(call);
                 }
             }

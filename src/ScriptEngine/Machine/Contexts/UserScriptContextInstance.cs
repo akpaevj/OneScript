@@ -65,7 +65,7 @@ namespace ScriptEngine.Machine.Contexts
 
             base.OnInstanceCreation();
             var methId = GetScriptMethod(OnInstanceCreationTerms.Russian, OnInstanceCreationTerms.English);
-            int constructorParamsCount = ConstructorParams.Count();
+            int constructorParamsCount = ConstructorParams.Length;
 
             if (methId > -1)
             {
@@ -233,16 +233,10 @@ namespace ScriptEngine.Machine.Contexts
 
             var eventName = arguments[0].AsString();
             IValue[] eventArgs = null;
-            if (arguments.Length > 1)
-            {
-                if (arguments[1].AsObject() is IEnumerable<IValue> argsArray)
-                {
-                    eventArgs = argsArray.ToArray();
-                }
-            }
+            if (arguments.Length > 1 && arguments[1].AsObject() is IEnumerable<IValue> argsArray)
+                eventArgs = argsArray.ToArray();
 
-            if (eventArgs == null)
-                eventArgs = new IValue[0];
+            eventArgs ??= Array.Empty<IValue>();
             
             MachineInstance.Current.EventProcessor?.HandleEvent(this, eventName, eventArgs);
         }

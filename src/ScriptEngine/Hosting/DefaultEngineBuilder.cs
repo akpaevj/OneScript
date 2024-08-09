@@ -5,16 +5,23 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
+using System;
+using System.Collections.Generic;
 
 namespace ScriptEngine.Hosting
 {
     public class DefaultEngineBuilder : IEngineBuilder
     {
+        public List<Action<IRuntimeEnvironment>> EnvironmentSetupActions { get; } = new();
+        public List<Action<ContextDiscoverer>> AssembliesSetupActions { get; } = new();
+
         protected DefaultEngineBuilder()
         {
-            EnvironmentProviders.Add(environment => environment.AddAssembly(GetType().Assembly));
+            AssembliesSetupActions.Add(cd => cd.AddAssembly(GetType().Assembly));
         }
         
         public static IEngineBuilder Create()
@@ -24,29 +31,25 @@ namespace ScriptEngine.Hosting
         }
         
         public ConfigurationProviders ConfigurationProviders { get; } = new ConfigurationProviders();
-
-        public EnvironmentProviders EnvironmentProviders { get; } = new EnvironmentProviders();
         
-        public IServiceDefinitions Services { get; set; } = new TinyIocImplementation();
+        public IServiceDefinitions Services { get; private set; } = new TinyIocImplementation();
         
         public virtual ScriptingEngine Build()
         {
-            var container = GetContainer();
+            var container = Services.CreateContainer();
+
+            var contextDiscoverer = container.Resolve<ContextDiscoverer>();
+            AssembliesSetupActions.ForEach(c => c.Invoke(contextDiscoverer));
+
+            var environment = container.Resolve<IRuntimeEnvironment>();
+            EnvironmentSetupActions.ForEach(c => c.Invoke(environment));
 
             var engine = container.Resolve<ScriptingEngine>();
-            var env = container.Resolve<ExecutionContext>();
-            
-            EnvironmentProviders.Invoke(env);
             
             var dependencyResolver = container.TryResolve<IDependencyResolver>();
             dependencyResolver?.Initialize(engine);
             
             return engine;
-        }
-
-        protected virtual IServiceContainer GetContainer()
-        {
-            return Services.CreateContainer();
         }
     }
 }

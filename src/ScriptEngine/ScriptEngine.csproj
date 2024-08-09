@@ -6,6 +6,7 @@
     <TargetFramework>$(TargetFrameworkVersion)</TargetFramework>
     <Configurations>Debug;Release;LinuxDebug</Configurations>
     <Platforms>AnyCPU</Platforms>
+	<LangVersion>10.0</LangVersion>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -41,6 +42,10 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.65.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     <ProjectReference Include="..\OneScript.Native\OneScript.Native.csproj" />
@@ -49,5 +54,13 @@
   <ItemGroup>
     <Reference Include="CustomMarshalers" Condition="'$(TargetFramework)' == 'net452'" />
   </ItemGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+    <ItemGroup>
+	    <Protobuf Include="..\OneScript.DebugProtocol\debug.proto" GrpcServices="Server" Link="Protos\debug.proto" />
+    </ItemGroup>
   
 </Project>

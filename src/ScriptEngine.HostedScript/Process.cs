@@ -31,8 +31,7 @@ namespace ScriptEngine.HostedScript
             try
             {
                 MachineInstance.Current.EventProcessor = new DefaultEventProcessor();
-                _engine.UpdateContexts();
-                _engine.NewObject(_module);
+                ScriptingEngine.NewObject(_module);
                 exitCode = 0;
             }
             catch (ScriptInterruptionException e)

@@ -50,7 +50,7 @@ namespace OneScript.Dynamic.Tests
             testServices = new TinyIocImplementation();
             testServices.Register(sp => sp);
             testServices.RegisterSingleton<ITypeManager, DefaultTypeManager>();
-            testServices.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
+            testServices.RegisterSingleton<IGlobalContextsManager, GlobalInstancesManager>();
             testServices.RegisterSingleton<CompileTimeSymbolsProvider>();
             testServices.RegisterEnumerable<IDirectiveHandler, EmptyDirectiveHandler>();
             testServices.Register<IErrorSink, ThrowingErrorSink>();

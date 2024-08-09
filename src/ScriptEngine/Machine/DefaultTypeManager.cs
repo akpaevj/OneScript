@@ -35,8 +35,6 @@ namespace ScriptEngine.Machine
             RegisterTypeInternal(BasicTypes.Number);
             RegisterTypeInternal(BasicTypes.Null);
             RegisterTypeInternal(BasicTypes.Type);
-            
-            // TODO тут был еще тип Object для конструирования
         }
 
         #region ITypeManager Members

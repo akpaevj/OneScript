@@ -5,21 +5,22 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Threading.Tasks;
+using Grpc.Core;
 
 namespace ScriptEngine.Machine
 {
     public interface IDebugController : IDisposable
     {
+        IBreakpointManager BreakpointManager { get; }
+
         void Init();
         void Wait();
         void NotifyProcessExit(int exitCode);
-
         void AttachToThread();
-
         void DetachFromThread();
-        
-        IBreakpointManager BreakpointManager { get; }
     }
 
     public interface IBreakpointManager

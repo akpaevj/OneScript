@@ -5,17 +5,10 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using System;
-
-namespace OneScript.DebugProtocol
+namespace OneScript.DebugProtocol.Breakpoints
 {
-    [Serializable]
-    public class Breakpoint
+    public record ConditionalBreakpoint : Breakpoint
     {
-        public int Id { get; set; }
-        public string Source { get; set; }
-        public int Line { get; set; }
-        public string Condition { get; set; } = string.Empty;
+        public string Condition { get; set; }
     }
-    
 }

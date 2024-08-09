@@ -11,8 +11,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using OneScript.DebugProtocol;
 using OneScript.DebugProtocol.Abstractions;
+using OneScript.DebugProtocol.Breakpoints;
 using OneScript.DebugProtocol.TcpServer;
 using Serilog;
+using Breakpoint = OneScript.DebugProtocol.Breakpoints.Breakpoint;
 
 namespace VSCode.DebugAdapter
 {

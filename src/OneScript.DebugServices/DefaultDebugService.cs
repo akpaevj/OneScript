@@ -16,6 +16,7 @@ using ScriptEngine.Machine;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
 using Variable = OneScript.DebugProtocol.Variable;
 using MachineVariable = OneScript.Contexts.Variable;
+using OneScript.DebugProtocol.Breakpoints;
 
 namespace OneScript.DebugServices
 {

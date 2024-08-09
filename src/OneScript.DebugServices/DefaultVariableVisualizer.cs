@@ -49,7 +49,7 @@ namespace OneScript.DebugServices
             }
 
             if (presentation.Length > DebuggerSettings.MAX_PRESENTATION_LENGTH)
-                presentation = presentation.Substring(0, DebuggerSettings.MAX_PRESENTATION_LENGTH) + "...";
+                presentation = string.Concat(presentation.AsSpan(0, DebuggerSettings.MAX_PRESENTATION_LENGTH), "...");
 
             return new Variable()
             {
@@ -92,17 +92,14 @@ namespace OneScript.DebugServices
             return presenter.Result;
         }
 
-        private bool IsStructured(IVariable variable)
+        private static bool IsStructured(IVariable variable)
         {
             var rawValue = variable?.GetRawValue();
             return HasProperties(rawValue as IRuntimeContextInstance) 
                    || HasIndexes(rawValue as ICollectionContext<IValue>);
         }
 
-        private bool HasIndexes(ICollectionContext<IValue> collection)
-        {
-            return collection?.Count() > 0;
-        }
+        private static bool HasIndexes(ICollectionContext<IValue> collection) => collection?.Count() > 0;
 
         private static bool HasProperties(IRuntimeContextInstance value)
         {

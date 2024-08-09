@@ -8,14 +8,15 @@ at http://mozilla.org/MPL/2.0/.
 using OneScript.StandardLibrary.Collections;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
+using ScriptEngine.Machine.Contexts;
 
 namespace OneScript.Web.Server
 {
-    public static class EngineBuilderExtensions
+    public static class ContextDiscovererExtensions
     {
-        public static ExecutionContext AddWebServer(this ExecutionContext env)
+        public static ContextDiscoverer AddWebServer(this ContextDiscoverer contextDiscoverer)
         {
-            return env.AddAssembly(typeof(WebServer).Assembly);
+            return contextDiscoverer.AddAssembly(typeof(WebServer).Assembly);
         }
     }
 }

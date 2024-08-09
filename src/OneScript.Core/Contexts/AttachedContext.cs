@@ -15,6 +15,10 @@ namespace OneScript.Contexts
     /// </summary>
     public sealed class AttachedContext
     {
+        public IReadOnlyList<IVariable> Variables => _variables;
+        public IReadOnlyList<BslMethodInfo> Methods => _methods;
+        public IAttachableContext Instance { get; }
+
         private readonly IVariable[] _variables;
         private readonly BslMethodInfo[] _methods;
 
@@ -30,11 +34,5 @@ namespace OneScript.Contexts
             _variables = vars;
             _methods = Array.Empty<BslMethodInfo>();
         }
-
-        public IReadOnlyList<IVariable> Variables => _variables;
-
-        public IReadOnlyList<BslMethodInfo> Methods => _methods;
-
-        public IAttachableContext Instance { get; }
     }
 }

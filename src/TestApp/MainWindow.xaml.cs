@@ -138,7 +138,7 @@ namespace TestApp
                 .Create()
                 .SetDefaultOptions()
                 .UseNativeRuntime()
-                .SetupEnvironment(e =>
+                .SetupAssemblies(e =>
                 {
                     e.AddStandardLibrary();
                     e.AddWebServer();

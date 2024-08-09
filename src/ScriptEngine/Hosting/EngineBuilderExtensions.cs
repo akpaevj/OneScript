@@ -23,37 +23,31 @@ namespace ScriptEngine.Hosting
 {
     public static class EngineBuilderExtensions
     {
-        /// <summary>
-        /// Используется для замены DI системы, например в ASP.NET
-        /// </summary>
-        /// <param name="b"></param>
-        /// <param name="ioc"></param>
-        /// <returns></returns>
-        public static IEngineBuilder WithServices(this IEngineBuilder b, IServiceDefinitions ioc)
+        public static IEngineBuilder SetupEnvironment(this IEngineBuilder b, Action<IRuntimeEnvironment> action)
         {
-            b.Services = ioc;
+            b.EnvironmentSetupActions.Add(action);
+            return b;
+        }
+
+        public static IEngineBuilder SetupAssemblies(this IEngineBuilder b, Action<ContextDiscoverer> action)
+        {
+            b.AssembliesSetupActions.Add(action);
             return b;
         }
         
-        public static IEngineBuilder SetupEnvironment(this IEngineBuilder b, Action<ExecutionContext> action)
-        {
-            b.EnvironmentProviders.Add(action);
-            return b;
-        }
-        
-        [SuppressMessage("ReSharper", "RedundantTypeArgumentsOfMethod")]
         public static IEngineBuilder SetDefaultOptions(this IEngineBuilder builder)
         {
             var services = builder.Services;
             
-            services.Register<IServiceContainer>(sp => sp);
-            services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
-            services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
-            services.RegisterSingleton<RuntimeEnvironment>();
-            services.RegisterSingleton<IRuntimeEnvironment>(sp => sp.Resolve<RuntimeEnvironment>());
+            services.Register(sp => sp);
+            services.RegisterSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();
             services.RegisterSingleton<CompileTimeSymbolsProvider>();
             services.RegisterSingleton<IErrorSink>(svc => new ThrowingErrorSink(CompilerException.FromCodeError));
-            services.RegisterSingleton<IExceptionInfoFactory, ExceptionInfoFactory>();
+            services.RegisterSingleton<IRuntimeEnvironment, RuntimeEnvironment>();
+            services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
+            services.RegisterSingleton<ILibraryManager, LibraryManager>();
+            services.RegisterSingleton<ContextDiscoverer>();
+            services.RegisterSingleton<IMachineInstancePool, MachineInstancePool>();
             
             services.Register<ExecutionDispatcher>();
             services.Register<IDependencyResolver, NullDependencyResolver>();
@@ -62,15 +56,14 @@ namespace ScriptEngine.Hosting
             services.RegisterEnumerable<IDirectiveHandler, ConditionalDirectiveHandler>();
             services.RegisterEnumerable<IDirectiveHandler, RegionDirectiveHandler>();
             
-            services.Register<ExecutionContext>();
             services.EnablePredefinedIterables();
-            services.Register<PreprocessorHandlers>(sp =>
+            services.Register(sp =>
             {
                 var providers = sp.ResolveEnumerable<IDirectiveHandler>();
                 return new PreprocessorHandlers(providers);
             });
             
-            services.Register<KeyValueConfig>(sp =>
+            services.Register(sp =>
             {
                 var providers = sp.Resolve<ConfigurationProviders>();
                 return providers.CreateConfig();

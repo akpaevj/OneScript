@@ -139,7 +139,7 @@ namespace OneScript.StandardLibrary.Native
             if(_ast == default)
                 ParseCode();
 
-            var expression = ReduceAst(_ast);
+            var expression = ReduceAst();
             
             if (_errors.HasErrors)
             {
@@ -157,7 +157,7 @@ namespace OneScript.StandardLibrary.Native
             return expression;
         }
 
-        private LambdaExpression ReduceAst(BslSyntaxNode ast)
+        private LambdaExpression ReduceAst()
         {
             // в параметрах лежат соответствия имени переменной и ее типа
             // блок кода надо скомпилировтаь в лямбду с параметрами по количеству в коллекции Parameters и с типами параметров, как там

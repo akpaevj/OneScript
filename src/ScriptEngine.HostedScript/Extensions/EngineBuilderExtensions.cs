@@ -109,11 +109,10 @@ namespace ScriptEngine.HostedScript.Extensions
             return b;
         }
 
-        public static ExecutionContext UseTemplateFactory(this ExecutionContext env, ITemplateFactory factory)
+        public static IRuntimeEnvironment UseTemplateFactory(this IRuntimeEnvironment env, ITemplateFactory factory)
         {
             var storage = new TemplateStorage(factory);
-            env.GlobalNamespace.InjectObject(storage);
-            env.GlobalInstances.RegisterInstance(storage);
+            env.InjectObject(storage);
             return env;
         }
 

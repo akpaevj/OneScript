@@ -22,16 +22,16 @@ namespace ScriptEngine.Machine.Contexts
     {
         private const string INSTANCE_RETRIEVER_NAME = "CreateInstance";
 
-        public ContextDiscoverer(ITypeManager types, IGlobalsManager globals, IServiceContainer services)
+        private readonly IServiceContainer _serviceContainer;
+        private readonly ITypeManager _typeManager;
+        private readonly IRuntimeEnvironment _runtimeEnvironment;
+
+        public ContextDiscoverer(IServiceContainer services)
         {
-            Types = types;
-            Globals = globals;
-            Services = services;
+            _serviceContainer = services;
+            _typeManager = _serviceContainer.Resolve<ITypeManager>();
+            _runtimeEnvironment = _serviceContainer.Resolve<IRuntimeEnvironment>();
         }
-        
-        private ITypeManager Types { get; }
-        private IGlobalsManager Globals { get; }
-        private IServiceContainer Services { get; }
 
         public void DiscoverClasses(Assembly assembly, Predicate<Type> filter = null)
         {
@@ -52,10 +52,7 @@ namespace ScriptEngine.Machine.Contexts
                 throw new Exception("Error loading assemblies:\n" + sb.ToString());
             }
 
-            if (filter == null)
-            {
-                filter = t => true;
-            }
+            filter ??= t => true;
             
             var collection = GetMarkedTypes(types, typeof(ContextClassAttribute), filter);
 
@@ -66,33 +63,24 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         public void DiscoverGlobalContexts(
-            IRuntimeEnvironment environment, 
             Assembly assembly,
             Predicate<Type> filter = null)
         {
-            if (filter == null)
-            {
-                filter = t => true;
-            }
+            filter ??= t => true;
             
             var allTypes = assembly.GetTypes();
+
             var enums = GetMarkedTypes(allTypes.AsParallel(), typeof(SystemEnumAttribute), filter);
             foreach (var item in enums)
-            {
-                RegisterSystemEnum(item, environment);
-            }
+                RegisterSystemEnum(item);
 
             var simpleEnums = GetMarkedTypes(allTypes.AsParallel(), typeof(EnumerationTypeAttribute), filter);
             foreach (var item in simpleEnums)
-            {
-                RegisterSimpleEnum(item, environment);
-            }
+                RegisterSimpleEnum(item);
 
             var contexts = GetMarkedTypes(allTypes.AsParallel(), typeof(GlobalContextAttribute), filter);
             foreach (var item in contexts)
-            {
-                RegisterGlobalContext(item, environment);
-            }
+                RegisterGlobalContext(item);
         }
 
         private static IEnumerable<Type> GetMarkedTypes(IEnumerable<Type> allTypes, Type attribute, Predicate<Type> filter)
@@ -102,13 +90,11 @@ namespace ScriptEngine.Machine.Contexts
         }
 
         private void RegisterSystemType(Type stdClass)
-        {
-            Types.RegisterClass(stdClass);
-        }
+            => _typeManager.RegisterClass(stdClass);
 
-        private void RegisterSystemEnum(Type enumType, IRuntimeEnvironment environment)
+        private void RegisterSystemEnum(Type enumType)
         {
-            var method = enumType.GetMethod(INSTANCE_RETRIEVER_NAME, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+            var method = enumType.GetMethod(INSTANCE_RETRIEVER_NAME, BindingFlags.Static | BindingFlags.Public);
             
             if(method == default)
                 throw new ArgumentException($"System enum must have a static method {INSTANCE_RETRIEVER_NAME}");
@@ -118,13 +104,12 @@ namespace ScriptEngine.Machine.Contexts
                 throw new ArgumentException($"Method {enumType}::{INSTANCE_RETRIEVER_NAME} must accept ITypeManager as an argument");
 
             var enumMetadata = (SystemEnumAttribute)enumType.GetCustomAttributes(typeof(SystemEnumAttribute), false)[0];
-            var instance = (IValue)method.Invoke(null, new object[]{Types});
+            var instance = (IValue)method.Invoke(null, new object[]{_typeManager});
             
-            Globals.RegisterInstance(instance);
-            environment.InjectGlobalProperty(instance, enumMetadata.Name, enumMetadata.Alias, true);
+            _runtimeEnvironment.InjectGlobalProperty(instance, enumMetadata.Name, enumMetadata.Alias, true);
         }
         
-        private void RegisterSimpleEnum(Type enumType, IRuntimeEnvironment environment)
+        private void RegisterSimpleEnum(Type enumType)
         {
             var enumTypeAttribute = (EnumerationTypeAttribute)enumType.GetCustomAttributes (typeof (EnumerationTypeAttribute), false)[0];
 
@@ -132,7 +117,7 @@ namespace ScriptEngine.Machine.Contexts
             var genericValue = typeof(ClrEnumValueWrapper<>).MakeGenericType(enumType);
 
             var (enumTypeDescription, valueTypeDescription) =
-                EnumContextHelper.RegisterEnumType(genericType, genericValue, Types, enumTypeAttribute);
+                EnumContextHelper.RegisterEnumType(genericType, genericValue, _typeManager, enumTypeAttribute);
 
             var factory = genericType.GetMethod(INSTANCE_RETRIEVER_NAME,
                 BindingFlags.Public | BindingFlags.Static,
@@ -149,20 +134,17 @@ namespace ScriptEngine.Machine.Contexts
             var instance = (IValue)factory.Invoke(null, new object[]{enumTypeDescription, valueTypeDescription});
             
 			if (enumTypeAttribute.CreateGlobalProperty)
-			{
-				Globals.RegisterInstance(enumType, instance);
-				environment.InjectGlobalProperty(instance, enumTypeAttribute.Name, enumTypeAttribute.Alias, true);
-            }
+				_runtimeEnvironment.InjectGlobalProperty(instance, enumTypeAttribute.Name, enumTypeAttribute.Alias, true);
         }
 
-        private void RegisterGlobalContext(Type contextType, IRuntimeEnvironment environment)
+        private void RegisterGlobalContext(Type contextType)
         {
             var attribData = (GlobalContextAttribute)contextType.GetCustomAttributes(typeof(GlobalContextAttribute), false)[0];
             if (attribData.ManualRegistration)
                 return;
 
             var method = contextType.GetMethod(INSTANCE_RETRIEVER_NAME, System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
-            System.Diagnostics.Trace.Assert(method != null, "Global context must have a static method " + INSTANCE_RETRIEVER_NAME);
+            Trace.Assert(method != null, "Global context must have a static method " + INSTANCE_RETRIEVER_NAME);
             var parameters = method.GetParameters();
             IAttachableContext instance;
             if (parameters.Length == 0)
@@ -171,13 +153,12 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                var resolvedArgs = parameters.Select(p => Services.Resolve(p.ParameterType))
+                var resolvedArgs = parameters.Select(p => _serviceContainer.Resolve(p.ParameterType))
                     .ToArray();
                 instance = (IAttachableContext)method.Invoke(null, resolvedArgs);
             }
-            Globals.RegisterInstance(instance);
-            environment.InjectObject(instance);
 
+            _runtimeEnvironment.InjectObject(instance);
         }
     }
 }

@@ -34,20 +34,14 @@ namespace ScriptEngine.HostedScript
             _env = _engine.Environment;
             _engine.AttachAssembly(typeof(HostedScriptEngine).Assembly);
             _workingConfig = _engine.Services.Resolve<OneScriptLibraryOptions>();
-            SetGlobalContexts(engine.GlobalsManager);
+
+            SetGlobalContexts();
         }
 
-        private void SetGlobalContexts(IGlobalsManager manager)
+        private void SetGlobalContexts()
         {
-            _globalCtx = new SystemGlobalContext();
-            _globalCtx.EngineInstance = _engine;
-
-            _env.InjectObject(_globalCtx);
-            manager.RegisterInstance(_globalCtx);
-
-            var dynLoader = new DynamicLoadingFunctions(_engine);
-            _env.InjectObject(dynLoader);
-            manager.RegisterInstance(dynLoader);
+            _env.InjectObject(new SystemGlobalContext());
+            _env.InjectObject(new DynamicLoadingFunctions(_engine));
 
             var bgTasksManager = new BackgroundTasksManager(_engine.Services.Resolve<ExecutionContext>());
             _env.InjectGlobalProperty(bgTasksManager, "ФоновыеЗадания", "BackgroundJobs", true);

@@ -26,7 +26,7 @@ namespace OneScript.StandardLibrary.XDTO
         private readonly XmlNodeTypeEnum _xmlNodeEnum;
 
 
-        private XDTOSerializer(IGlobalsManager globalsManager)
+        private XDTOSerializer(IGlobalContextsManager globalsManager)
         {
             _xmlGlobalFunctions = globalsManager.GetInstance<XmlGlobalFunctions>();
             _xmlNodeEnum = globalsManager.GetInstance<XmlNodeTypeEnum>();
@@ -260,7 +260,7 @@ namespace OneScript.StandardLibrary.XDTO
         [ScriptConstructor(Name = "По умолчанию")]
         public static XDTOSerializer CreateInstance(TypeActivationContext context)
         {
-            var globalsManager = context.Services.Resolve<IGlobalsManager>();
+            var globalsManager = context.Services.Resolve<IGlobalContextsManager>();
             return new XDTOSerializer(globalsManager);
         }
 

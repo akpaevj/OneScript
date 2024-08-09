@@ -12,16 +12,15 @@ namespace ScriptEngine.Hosting
 {
     public class ConfigurationProviders
     {
-        private List<Func<IDictionary<string, string>>> _providers = new List<Func<IDictionary<string, string>>>();
+        private readonly List<Func<IDictionary<string, string>>> _providers = new List<Func<IDictionary<string, string>>>();
 
         public void Add(Func<IDictionary<string, string>> configGetter)
-        {
-            _providers.Add(configGetter);
-        }
+            => _providers.Add(configGetter);
 
         public KeyValueConfig CreateConfig()
         {
             var cfg = new KeyValueConfig();
+
             foreach (var provider in _providers)
             {
                 cfg.Merge(provider());

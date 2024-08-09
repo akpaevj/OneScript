@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using FluentAssertions;
 using Moq;
 using OneScript.Commons;
+using OneScript.DependencyInjection;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary;
 using OneScript.Types;
@@ -105,7 +106,7 @@ namespace OneScript.Core.Tests
             Assert.True(falseString.AsString() == "лОжЬ");
 
             var dateString = ValueFactory.Create("20140101");
-            DateTime jan_01_14 = new DateTime(2014,01,01);
+            DateTime jan_01_14 = new(2014,01,01);
             Assert.True(dateString.AsDate() == jan_01_14);
 
             var numString = ValueFactory.Create("012.12");
@@ -242,7 +243,7 @@ namespace OneScript.Core.Tests
             var manualGuid = new GuidWrapper("9F3457C0-7D2A-4DCD-B9F9-3D9228986A6A");
 
             var typeManager = new DefaultTypeManager(); 
-            var discoverer = new ContextDiscoverer(typeManager, Mock.Of<IGlobalsManager>(), default);
+            var discoverer = new ContextDiscoverer(Mock.Of<IServiceContainer>());
             
             discoverer.DiscoverClasses(typeof(GuidWrapper).Assembly, x => x == typeof(GuidWrapper));
 

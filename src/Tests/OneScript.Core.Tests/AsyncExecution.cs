@@ -24,8 +24,8 @@ namespace OneScript.Core.Tests
 
             var module = CompileModule(engine, "А = 1; Б = 2;");
             
-            var sdo = engine.CreateUninitializedSDO(module);
-            await engine.InitializeSDOAsync(sdo);
+            var sdo = ScriptingEngine.CreateUninitializedSDO(module);
+            await ScriptingEngine.InitializeSDOAsync(sdo);
         }
         
         [Fact(Skip = "Async не реализован в ExecutionDispatcher")]
@@ -42,26 +42,26 @@ namespace OneScript.Core.Tests
             var tasks = new Task[3];
             for (int i = 0; i < tasks.Length; i++)
             {
-                var sdo = engine.CreateUninitializedSDO(module);
-                tasks[i] = engine.InitializeSDOAsync(sdo);
+                var sdo = ScriptingEngine.CreateUninitializedSDO(module);
+                tasks[i] = ScriptingEngine.InitializeSDOAsync(sdo);
             }
 
             await Task.WhenAll(tasks);
         }
         
-        private IExecutableModule CompileModule(ScriptingEngine engine, string code)
+        private static IExecutableModule CompileModule(ScriptingEngine engine, string code)
         {
             var codeSource = engine.Loader.FromString(code);
             var compiler = engine.GetCompilerService();
             return compiler.Compile(codeSource);
         }
         
-        private ScriptingEngine MakeTestEngine()
+        private static ScriptingEngine MakeTestEngine()
         {
             var builder = DefaultEngineBuilder
                 .Create()
                 .SetDefaultOptions()
-                .SetupEnvironment(e => e.AddStandardLibrary());
+                .SetupAssemblies(e => e.AddStandardLibrary());
             return builder.Build();
         }
     }

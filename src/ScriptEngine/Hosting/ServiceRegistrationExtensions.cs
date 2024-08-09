@@ -24,18 +24,17 @@ namespace ScriptEngine.Hosting
             return b;
         }
         
-        public static ExecutionContext AddAssembly(this ExecutionContext env, Assembly asm, Predicate<Type> filter = null)
+        public static ContextDiscoverer AddAssembly(this ContextDiscoverer discoverer, Assembly asm, Predicate<Type> filter = null)
         {
-            var discoverer = env.Services.Resolve<ContextDiscoverer>();
             discoverer.DiscoverClasses(asm, filter);
-            discoverer.DiscoverGlobalContexts(env.GlobalNamespace, asm, filter);
-            return env;
+            discoverer.DiscoverGlobalContexts(asm, filter);
+
+            return discoverer;
         }
         
-        public static ExecutionContext AddGlobalContext(this ExecutionContext env, IAttachableContext context)
+        public static IRuntimeEnvironment AddGlobalContext(this IRuntimeEnvironment env, IAttachableContext context)
         {
-            env.GlobalNamespace.InjectObject(context);
-            env.GlobalInstances.RegisterInstance(context);
+            env.InjectObject(context);
             return env;
         }
 
@@ -57,7 +56,7 @@ namespace ScriptEngine.Hosting
         public static IServiceDefinitions UseImports(this IServiceDefinitions services, Func<IServiceContainer, IDependencyResolver> factory)
         {
             services.RegisterEnumerable<IDirectiveHandler, ImportDirectivesHandler>();
-            services.RegisterSingleton<IDependencyResolver>(factory);
+            services.RegisterSingleton(factory);
             return services;
         }
         

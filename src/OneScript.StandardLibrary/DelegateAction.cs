@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Linq;
 using OneScript.Contexts;
+using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
@@ -24,7 +25,7 @@ namespace OneScript.StandardLibrary
         private const string MethodName_Ru = "Выполнить";
         private const string MethodName_En = "Execute";
 
-        private static BslMethodInfo ExecuteMethodInfo;
+        private static readonly BslMethodInfo _executeMethodInfo;
 
         static DelegateAction()
         {
@@ -33,15 +34,15 @@ namespace OneScript.StandardLibrary
                 .ReturnType(typeof(BslValue))
                 .SetNames(MethodName_Ru, MethodName_En);
 
-            ExecuteMethodInfo = builder.Build();
+            _executeMethodInfo = builder.Build();
         }
         
-        public DelegateAction(Func<IValue[], IValue> action)
+        public DelegateAction(ITypeManager typeManager, Func<IValue[], IValue> action) : base(typeManager)
         {
             _action = action;
         }
 
-        public DelegateAction(Func<BslValue[], BslValue> action)
+        public DelegateAction(ITypeManager typeManager, Func<BslValue[], BslValue> action) : base(typeManager)
         {
             _action = parameters => action( parameters.Select(x=>x.GetRawValue())
                 .Cast<BslValue>().ToArray() );
@@ -67,7 +68,7 @@ namespace OneScript.StandardLibrary
 
         public override BslMethodInfo GetMethodInfo(int methodNumber)
         {
-            return ExecuteMethodInfo;
+            return _executeMethodInfo;
         }
 
         public override void CallAsFunction(int methodNumber, IValue[] arguments, out IValue retValue)
@@ -81,17 +82,19 @@ namespace OneScript.StandardLibrary
         }
 
         [ScriptConstructor]
-        public static DelegateAction Create(IRuntimeContextInstance target, string methodName)
+        public static DelegateAction Create(TypeActivationContext typeActivationContext, IRuntimeContextInstance target, string methodName)
         {
+            var typeManager = typeActivationContext.Services.Resolve<ITypeManager>();
+
             var method = target.GetMethodNumber(methodName);
 
-            Func<IValue[], IValue> action = (parameters) =>
+            IValue action(IValue[] parameters)
             {
                 target.CallAsFunction(method, parameters, out var retVal);
                 return retVal;
-            };
-            
-            return new DelegateAction(action);
+            }
+
+            return new DelegateAction(typeManager, action);
         }
     }
 }

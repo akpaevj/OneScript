@@ -299,11 +299,7 @@ namespace VSCodeDebug
 
 		public DebugSession(bool debuggerLinesStartAt1, bool debuggerPathsAreURI = false)
 		{
-			PathStrategy = new PathHandlingStrategy
-			{
-				DebuggerLinesStartAt1 = debuggerLinesStartAt1,
-				DebuggerPathsAreUri = debuggerPathsAreURI
-			};
+			 
 		}
 
 		public void SendResponse(Response response, dynamic body = null)

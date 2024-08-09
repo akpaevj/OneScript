@@ -6,17 +6,16 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using ScriptEngine.Machine;
-using ScriptEngine.Machine.Contexts;
 using SymbolScope = OneScript.Compilation.Binding.SymbolScope;
 
 namespace ScriptEngine
 {
-    [Obsolete("Use interface IRuntimeEnvironment")]
-    public class RuntimeEnvironment : IRuntimeEnvironment, ILibraryManager
+    public class RuntimeEnvironment : IRuntimeEnvironment
     {
         private readonly SymbolTable _symbols = new SymbolTable();
         private SymbolScope _scopeOfGlobalProperties;
@@ -24,8 +23,6 @@ namespace ScriptEngine
         private readonly PropertyBag _injectedProperties;
 
         private readonly List<IAttachableContext> _contexts = new List<IAttachableContext>();
-
-        private readonly List<ExternalLibraryDef> _externalLibs = new List<ExternalLibraryDef>();
 
         public RuntimeEnvironment()
         {
@@ -48,6 +45,7 @@ namespace ScriptEngine
         {
             RegisterObject(context);
         }
+
 
         public void InjectGlobalProperty(IValue value, string identifier, string alias, bool readOnly)
         {
@@ -102,28 +100,6 @@ namespace ScriptEngine
         public SymbolTable GetSymbolTable() => _symbols;
 
         public IReadOnlyCollection<IAttachableContext> AttachedContexts => _contexts;
-
-        public IEnumerable<ExternalLibraryDef> GetLibraries()
-        { 
-            return _externalLibs.ToArray();
-        }
-
-        public void InitExternalLibrary(ScriptingEngine runtime, ExternalLibraryDef library)
-        {
-            var loadedObjects = new ScriptDrivenObject[library.Modules.Count];
-            int i = 0;
-            foreach (var module in library.Modules)
-            {
-                var instance = runtime.CreateUninitializedSDO(module.Module);
-                
-                var propId = _injectedProperties.GetPropertyNumber(module.Symbol);
-                _injectedProperties.SetPropValue(propId, instance);
-                loadedObjects[i++] = instance;
-            }
-            
-            _externalLibs.Add(library);
-            loadedObjects.ForEach(runtime.InitializeSDO);
-        }
 
         private class WrappedPropertySymbol : IPropertySymbol
         {

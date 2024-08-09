@@ -9,6 +9,7 @@
     <Platforms>AnyCPU</Platforms>
     <!--Нацеливание на net461 нужно для сборки дебаг-адаптера под net461 без лишних DLL-->
     <TargetFrameworks>net48;$(TargetFrameworkVersion)</TargetFrameworks>
+	<LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'LinuxDebug' ">
@@ -17,6 +18,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
   </ItemGroup>
 </Project>

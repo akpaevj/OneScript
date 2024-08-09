@@ -23,11 +23,12 @@ namespace oscript
                     p.UseSystemConfigFile()
                         .UseEnvironmentVariableConfig("OSCRIPT_CONFIG")
                         .UseEntrypointConfigFile(codePath);
-                });
-
-            BuildUpWithIoC(builder);
-            
-            builder.SetupEnvironment(env =>
+                })
+                .SetDefaultOptions()
+                .UseImports()
+                .UseFileSystemLibraries()
+                .UseNativeRuntime()
+                .SetupEnvironment(env =>
                 {
                     env.AddStandardLibrary()
                      .AddWebServer()
@@ -43,15 +44,6 @@ namespace oscript
             var mainEngine = new HostedScriptEngine(engine);
 
             return mainEngine;
-        }
-
-        private static void BuildUpWithIoC(IEngineBuilder builder)
-        {
-            builder.SetDefaultOptions()
-                .UseImports()
-                .UseFileSystemLibraries()
-                .UseNativeRuntime()
-                ;
         }
     }
 }

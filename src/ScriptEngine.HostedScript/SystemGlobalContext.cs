@@ -29,8 +29,6 @@ namespace ScriptEngine.HostedScript.Library
         private IVariable[] _state;
         private FixedArrayImpl  _args;
 
-        public ScriptingEngine EngineInstance{ get; set; }
-
         public void InitInstance()
         {
             InitContextVariables();

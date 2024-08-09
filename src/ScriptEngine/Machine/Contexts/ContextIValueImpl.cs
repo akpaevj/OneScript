@@ -16,14 +16,16 @@ namespace ScriptEngine.Machine.Contexts
 {
     public abstract class ContextIValueImpl : BslObjectValue, IRuntimeContextInstance, ISystemTypeAcceptor
     {
+        private readonly ITypeManager _typeManager;
         private TypeDescriptor _type;
 
-        protected ContextIValueImpl() : this(BasicTypes.UnknownType)
+        protected ContextIValueImpl(ITypeManager typeManager) : this(typeManager, BasicTypes.UnknownType)
         {
         }
         
-        protected ContextIValueImpl(TypeDescriptor type)
+        protected ContextIValueImpl(ITypeManager typeManager, TypeDescriptor type)
         {
+            _typeManager = typeManager;
             _type = type;
         }
 
@@ -65,10 +67,9 @@ namespace ScriptEngine.Machine.Contexts
 
         private bool TryDetermineOwnType()
         {
-            var mgr = MachineInstance.Current?.TypeManager;
-            if (mgr?.IsKnownType(GetType()) ?? false)
+            if (_typeManager?.IsKnownType(GetType()) ?? false)
             {
-                _type = mgr.GetTypeByFrameworkType(GetType());
+                _type = _typeManager.GetTypeByFrameworkType(GetType());
                 return true;
             }
 
@@ -304,7 +305,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                return this.GetType().ToString().CompareTo(other.GetType().ToString());
+                return GetType().ToString().CompareTo(other.GetType().ToString());
             }
         }
 

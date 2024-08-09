@@ -218,11 +218,11 @@ namespace VSCode.DebugAdapter
                 path = NormalizeDriveLetter(path);
             }
             
-            var breaks = new List<OneScript.DebugProtocol.Breakpoint>();
+            var breaks = new List<OneScript.DebugProtocol.Breakpoints.Breakpoint>();
 
             foreach (var srcBreakpoint in arguments.breakpoints)
             {
-                var bpt = new OneScript.DebugProtocol.Breakpoint
+                var bpt = new OneScript.DebugProtocol.Breakpoints.Breakpoint
                 {
                     Line = (int)srcBreakpoint.line,
                     Source = path,
@@ -233,7 +233,7 @@ namespace VSCode.DebugAdapter
 
             if(breaks.Count == 0) // в целях сохранения интерфейса WCF придется сделать костыль на перех. период
             {
-                var bpt = new OneScript.DebugProtocol.Breakpoint
+                var bpt = new OneScript.DebugProtocol.Breakpoints.Breakpoint
                 {
                     Line = 0,
                     Source = path

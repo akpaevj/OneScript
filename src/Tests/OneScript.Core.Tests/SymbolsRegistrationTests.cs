@@ -41,7 +41,7 @@ namespace OneScript.Core.Tests
             var module = compiler.Compile(engine.Loader.FromString("Перем А Экспорт; Перем Б Экспорт;\n" +
                                                                    "А = 1; Б = 2;"));
             engine.Initialize();
-            var propertyHolder = (UserScriptContextInstance)engine.NewObject(module);
+            var propertyHolder = (UserScriptContextInstance)ScriptingEngine.NewObject(module);
             engine.Dispose();
             
             var env = new RuntimeEnvironment();

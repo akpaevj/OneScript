@@ -75,7 +75,7 @@ namespace ScriptEngine.Machine.Contexts
             TypeDescriptor enumType;
             TypeDescriptor enumValType;
 
-            (enumType, enumValType) = EnumContextHelper.RegisterEnumType<TOwner, ClrEnumValueWrapper<TEnum>>(typeManager);
+            (enumType, enumValType) = RegisterEnumType<TOwner, ClrEnumValueWrapper<TEnum>>(typeManager);
 
             instance = creator(enumType, enumValType);
             return instance;

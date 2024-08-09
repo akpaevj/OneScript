@@ -14,6 +14,8 @@ using System.Text;
 using Newtonsoft.Json.Linq;
 using Serilog;
 using StackFrame = OneScript.DebugProtocol.StackFrame;
+using OneScript.DebugProtocol.Breakpoints;
+using Breakpoint = OneScript.DebugProtocol.Breakpoints.Breakpoint;
 
 namespace VSCode.DebugAdapter
 {

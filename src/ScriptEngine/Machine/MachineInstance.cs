@@ -22,11 +22,14 @@ using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Compiler;
+using OneScript.DependencyInjection;
 
 namespace ScriptEngine.Machine
 {
     public class MachineInstance
     {
+        private readonly IServiceContainer _services;
+
         private Stack<IValue> _operationStack;
         private Stack<ExecutionFrame> _callStack;
         private ExecutionFrame _currentFrame;
@@ -37,44 +40,27 @@ namespace ScriptEngine.Machine
         private StackRuntimeModule _module;
         private ICodeStatCollector _codeStatCollector;
         private MachineStopManager _stopManager;
-        
-        private ExecutionContext _mem;
-        private AttachedContext[] _globalContexts;
 
         // для отладчика.
         // актуален в момент останова машины
         private IList<ExecutionFrameInfo> _fullCallstackCache;
         private ScriptInformationContext _debugInfo;
 
-        private MachineInstance() 
+        public MachineInstance(IServiceContainer services) 
         {
+            _services = services;
+
             InitCommands();
             Reset();
         }
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
-
-        public ExecutionContext Memory => _mem;
-
-        public ITypeManager TypeManager => _mem?.TypeManager;
-        
-        public IGlobalsManager Globals => _mem?.GlobalInstances;
-        
-        public void SetMemory(ExecutionContext memory)
-        {
-            Cleanup();
-
-            _mem = memory;
-            _codeStatCollector = _mem.Services.TryResolve<ICodeStatCollector>();
-            _globalContexts = _mem.GlobalNamespace.AttachedContexts.Select(x => new AttachedContext(x))
-                .ToArray();
-        }
         
         public bool IsRunning => _callStack.Count != 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static IReadOnlyList<AttachedContext> CreateFrameScopes(IReadOnlyList<AttachedContext> outerScopes, AttachedContext thisScope)
-            => new RuntimeScopes(outerScopes, thisScope);
+        private IReadOnlyList<AttachedContext> CreateFrameScopes(AttachedContext thisScope)
+            => new RuntimeScopes(_services.Resolve<IRuntimeEnvironment>().AttachedContexts, thisScope);
 
         internal IValue ExecuteMethod(IRunnable sdo, MachineMethodInfo methodInfo, IValue[] arguments)
         {
@@ -82,7 +68,7 @@ namespace ScriptEngine.Machine
             Debug.Assert(module != null);
 
             var thisScope = new AttachedContext(sdo);
-            var scopes = CreateFrameScopes(_globalContexts, thisScope);
+            var scopes = CreateFrameScopes(thisScope);
             
             var frame = new ExecutionFrame
             {
@@ -230,16 +216,12 @@ namespace ScriptEngine.Machine
 
         internal IValue EvaluateInFrame(string expression, ExecutionFrame selectedFrame)
         {
-            MachineInstance currentMachine;
-            MachineInstance runner = new MachineInstance
+            var runner = new MachineInstance()
             {
                 _mem = this._mem,
                 _globalContexts = this._globalContexts,
                 _debugInfo = CurrentScript
             };
-            currentMachine = Current;
-            SetCurrentMachineInstance(runner);
-
             runner.SetFrame(selectedFrame);
 
             ExecutionFrame frame;
@@ -2360,13 +2342,11 @@ namespace ScriptEngine.Machine
                 throw RuntimeException.ConstructorNotFound(typeName);
             }
             
-            // TODO убрать cast после рефакторинга ITypeFactory
             var factory = (TypeFactory)TypeManager.GetFactoryFor(type);
             var context = new TypeActivationContext
             {
                 TypeName = typeName,
-                TypeManager = _mem.TypeManager,
-                Services = _mem.Services
+                Services = _services
             };
 
             var instance = factory.Activate(context, argValues);
@@ -2479,22 +2459,5 @@ namespace ScriptEngine.Machine
                 Source = module.Source.Location,
                 FrameObject = frame
             };
-
-        // multithreaded instance
-        [ThreadStatic]
-        private static MachineInstance _currentThreadWorker;
-
-        private static void SetCurrentMachineInstance(MachineInstance current)
-            => _currentThreadWorker = current;
-
-        public static MachineInstance Current
-        {
-            get
-            {
-                _currentThreadWorker ??= new MachineInstance();
-
-                return _currentThreadWorker;
-            }
-        }
     }
 }
