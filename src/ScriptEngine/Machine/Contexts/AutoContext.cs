@@ -15,9 +15,9 @@ namespace ScriptEngine.Machine.Contexts
 {
     public abstract class AutoContext<TInstance> : PropertyNameIndexAccessor where TInstance : AutoContext<TInstance>
     {
-        private static readonly ContextPropertyMapper<TInstance> _properties = new ContextPropertyMapper<TInstance>();
-        private static readonly ContextMethodsMapper<TInstance> _methods = new ContextMethodsMapper<TInstance>();
-        private static readonly HashSet<int> _warnedDeprecatedMethods = new HashSet<int>();
+        private static readonly ContextPropertyMapper<TInstance> _properties = new();
+        private static readonly ContextMethodsMapper<TInstance> _methods = new();
+        private static readonly HashSet<int> _warnedDeprecatedMethods = new();
         
         protected AutoContext()
         {

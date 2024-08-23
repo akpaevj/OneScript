@@ -31,13 +31,13 @@ namespace OneScript.Web.Server
         }
 
         [ContextProperty("Запрос", "Request", CanWrite = false)]
-        public HttpRequestWrapper Request => new HttpRequestWrapper(_context.Request);
+        public HttpRequestWrapper Request => new(_context.Request);
 
         [ContextProperty("Ответ", "Response", CanWrite = false)]
-        public HttpResponseWrapper Response => new HttpResponseWrapper(_context.Response);
+        public HttpResponseWrapper Response => new(_context.Response);
 
         [ContextProperty("Соединение", "Connection", CanWrite = false)]
-        public ConnectionInfoWrapper Connection => new ConnectionInfoWrapper(_context.Connection);
+        public ConnectionInfoWrapper Connection => new(_context.Connection);
 
         [ContextProperty("ИдентификаторТрассировки", "TraceIdentifier", CanWrite = false)]
         public IValue TraceIdentifier => BslStringValue.Create(_context.TraceIdentifier);
@@ -49,7 +49,7 @@ namespace OneScript.Web.Server
         public MapImpl Items { get; } = new MapImpl();
 
         [ContextProperty("ВебСокеты", "WebSockets", CanWrite = false)]
-        public WebSocketsManagerWrapper WebSockets => new WebSocketsManagerWrapper(_context.WebSockets);
+        public WebSocketsManagerWrapper WebSockets => new(_context.WebSockets);
 
         [ContextMethod("Прервать", "Abort")]
         public void Abort() => _context.Abort();

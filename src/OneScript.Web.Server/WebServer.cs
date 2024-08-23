@@ -104,11 +104,6 @@ namespace OneScript.Web.Server
 
                         var methodNumber = _exceptionHandler?.Target.GetMethodNumber(_exceptionHandler?.MethodName);
 
-                        var debugController = _executionContext.Services.TryResolve<IDebugController>();
-
-                        // Thread unsafe call!
-                        debugController?.AttachToThread();
-
                         try
                         {
                             _exceptionHandler?.Target.CallAsProcedure((int)methodNumber, args);
@@ -116,11 +111,6 @@ namespace OneScript.Web.Server
                         catch (Exception ex)
                         {
                             WriteExceptionToResponse(context, ex);
-                        }
-                        finally
-                        {
-                            // Thread unsafe call!
-                            debugController?.DetachFromThread();
                         }
 
                         return Task.CompletedTask;
@@ -142,9 +132,6 @@ namespace OneScript.Web.Server
 
                     var methodNumber = middleware.Target.GetMethodNumber(middleware.MethodName);
 
-                    var debugController = _executionContext.Services.TryResolve<IDebugController>();
-                    debugController?.AttachToThread();
-
                     try
                     {
                         middleware.Target.CallAsProcedure(methodNumber, args);
@@ -155,10 +142,6 @@ namespace OneScript.Web.Server
                             WriteExceptionToResponse(context, ex);
                         else
                             throw;
-                    }
-                    finally
-                    {
-                        debugController?.DetachFromThread();
                     }
 
                     return Task.CompletedTask;

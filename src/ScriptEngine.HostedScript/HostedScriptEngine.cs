@@ -16,6 +16,7 @@ using OneScript.Execution;
 using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Tasks;
 using ScriptEngine.Machine.Contexts;
+using ScriptEngine.Debugging;
 
 namespace ScriptEngine.HostedScript
 {
@@ -39,8 +40,10 @@ namespace ScriptEngine.HostedScript
 
         private void SetGlobalContexts(IGlobalsManager manager)
         {
-            _globalCtx = new SystemGlobalContext();
-            _globalCtx.EngineInstance = _engine;
+            _globalCtx = new SystemGlobalContext
+            {
+                EngineInstance = _engine
+            };
 
             _env.InjectObject(_globalCtx);
             manager.RegisterInstance(_globalCtx);
@@ -91,11 +94,13 @@ namespace ScriptEngine.HostedScript
         {
             Initialize();
             SetGlobalEnvironment(host, src);
-            if (_engine.DebugController != null)
+
+            var debugController = _engine.Services.TryResolve<IDebugController>();
+            if (debugController != null)
             {
-                _engine.DebugController.Init();
-                _engine.DebugController.AttachToThread();
-                _engine.DebugController.Wait();
+                var machineInstance = MachineInstancesManager.MainInstance;
+                machineInstance.Pause(raiseEvent: false);
+                machineInstance.WaitContinue();
             }
 
             var compilerSvc = GetCompilerService();
@@ -107,7 +112,7 @@ namespace ScriptEngine.HostedScript
             }
             catch (CompilerException)
             {
-                _engine.DebugController?.NotifyProcessExit(1);
+                _engine.Stop(1);
                 throw;
             }
             return InitProcess(host, module);

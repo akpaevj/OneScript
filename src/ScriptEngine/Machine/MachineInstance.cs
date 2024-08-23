@@ -22,21 +22,23 @@ using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Compiler;
+using ScriptEngine.Debugging;
+using System.Threading;
+using System.Runtime.ConstrainedExecution;
 
 namespace ScriptEngine.Machine
 {
-    public class MachineInstance
+    public partial class MachineInstance : IDisposable
     {
         private Stack<IValue> _operationStack;
         private Stack<ExecutionFrame> _callStack;
         private ExecutionFrame _currentFrame;
         private Action<int>[] _commands;
         private Stack<ExceptionJumpInfo> _exceptionsStack;
-        private LruCache<string, StackRuntimeModule> _executeModuleCache = new LruCache<string, StackRuntimeModule>(64);
+        private readonly LruCache<string, StackRuntimeModule> _executeModuleCache = new(64);
 
         private StackRuntimeModule _module;
         private ICodeStatCollector _codeStatCollector;
-        private MachineStopManager _stopManager;
         
         private ExecutionContext _mem;
         private AttachedContext[] _globalContexts;
@@ -45,21 +47,23 @@ namespace ScriptEngine.Machine
         // актуален в момент останова машины
         private IList<ExecutionFrameInfo> _fullCallstackCache;
         private ScriptInformationContext _debugInfo;
+        private bool disposedValue;
 
-        private MachineInstance() 
+        internal MachineInstance() 
         {
             InitCommands();
             Reset();
         }
-
-        public event EventHandler<MachineStoppedEventArgs> MachineStopped;
 
         public ExecutionContext Memory => _mem;
 
         public ITypeManager TypeManager => _mem?.TypeManager;
         
         public IGlobalsManager Globals => _mem?.GlobalInstances;
-        
+
+        public event EventHandler<MachineContextEventArgs> CommandsFlowRun;
+        public event EventHandler<MachineContextEventArgs> CommandsFlowFinished;
+
         public void SetMemory(ExecutionContext memory)
         {
             Cleanup();
@@ -163,153 +167,6 @@ namespace ScriptEngine.Machine
             PushFrame(frame);
         }
 
-        #region Debug protocol methods
-
-        public void SetDebugMode(IBreakpointManager breakpointManager)
-        {
-            if (_stopManager == null)
-                _stopManager = new MachineStopManager(this, breakpointManager);
-        }
-        
-        public void UnsetDebugMode()
-        {
-            if (_stopManager != null)
-                PrepareDebugContinuation();
-
-            _stopManager = null;
-        }
-
-        public void StepOver()
-        {
-            if (_stopManager == null)
-                throw new InvalidOperationException("Machine is not in debug mode");
-
-            _stopManager.StepOver(_currentFrame);
-        }
-
-        public void StepIn()
-        {
-            if (_stopManager == null)
-                throw new InvalidOperationException("Machine is not in debug mode");
-
-            _stopManager.StepIn();
-        }
-
-        public void StepOut()
-        {
-            if (_stopManager == null)
-                throw new InvalidOperationException("Machine is not in debug mode");
-
-            _stopManager.StepOut(_currentFrame);
-        }
-
-        public void PrepareDebugContinuation()
-        {
-            if (_stopManager == null)
-                throw new InvalidOperationException("Machine is not in debug mode");
-
-            _stopManager.Continue();
-        }
-
-        public IValue Evaluate(string expression)
-        {
-            var code = CompileCached(expression, CompileExpressionModule);
-
-            var localScope = new AttachedContext(new UserScriptContextInstance(code), _currentFrame.Locals);
-            
-            var frame = new ExecutionFrame
-            {
-                MethodName = code.Source.Name,
-                Module = code,
-                ThisScope = localScope,
-                Scopes = CreateFrameScopes(_currentFrame.Scopes, localScope),
-                Locals = Array.Empty<IVariable>(),
-                InstructionPointer = 0,
-            };
-
-            try
-            {
-                PushFrame(frame);
-                MainCommandLoop();
-            }
-            finally
-            {
-                PopFrame();
-            }
-
-            return _operationStack.Pop();
-        }
-
-        internal IValue EvaluateInFrame(string expression, ExecutionFrame selectedFrame)
-        {
-            MachineInstance currentMachine;
-            MachineInstance runner = new MachineInstance
-            {
-                _mem = this._mem,
-                _globalContexts = this._globalContexts,
-                _debugInfo = CurrentScript
-            };
-            currentMachine = Current;
-            SetCurrentMachineInstance(runner);
-
-            runner.SetFrame(selectedFrame);
-
-            ExecutionFrame frame;
-            try
-            {
-                var code = runner.CompileExpressionModule(expression);
-
-                var localScope = new AttachedContext(new UserScriptContextInstance(code), selectedFrame.Locals);
-
-                frame = new ExecutionFrame
-                {
-                    MethodName = code.Source.Name,
-                    Module = code,
-                    ThisScope = localScope,
-                    Locals = Array.Empty<IVariable>(),
-                    Scopes = CreateFrameScopes(selectedFrame.Scopes, localScope),
-                    InstructionPointer = 0,
-                    LineNumber = 1
-                };
-            }
-            catch
-            {
-                SetCurrentMachineInstance(currentMachine);
-                throw;
-            }
-
-            try
-            {
-                runner.PushFrame(frame);
-                runner.MainCommandLoop();
-            }
-            finally
-            {
-                SetCurrentMachineInstance(currentMachine);
-            }
-
-            return runner._operationStack.Pop().GetRawValue();
-        }
-
-        public IValue EvaluateInFrame(string expression, int frameId)
-        {
-            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
-            if (frameId < 0 || frameId >= _fullCallstackCache.Count)
-                throw new ScriptException("Wrong stackframe");
-
-            ExecutionFrame selectedFrame = _fullCallstackCache[frameId].FrameObject;
-
-            return EvaluateInFrame(expression, selectedFrame);
-        }
-
-        private StackRuntimeModule CompileCached(string code, Func<string, StackRuntimeModule> compile)
-        {
-            var cacheKey = HashCode.Combine(code, _module.Source.Location, _currentFrame.ToString()).ToString("X8");
-            return _executeModuleCache.GetOrAdd(cacheKey, _ => compile(code));
-        }
-        
-        #endregion
-
         /// <summary>
         /// Обработчик событий, генерируемых классами прикладной логики.
         /// </summary>
@@ -349,7 +206,7 @@ namespace ScriptEngine.Machine
             _currentFrame = frame;
         }
 
-        private void Reset()
+        internal void Reset()
         {
             _operationStack = new Stack<IValue>();
             _callStack = new Stack<ExecutionFrame>();
@@ -397,6 +254,8 @@ namespace ScriptEngine.Machine
 
         private void ExecuteCode()
         {
+            CommandsFlowRun?.Invoke(this, new MachineContextEventArgs(Environment.CurrentManagedThreadId));
+
             PrepareCodeStatisticsData(_module);
 
             while (true)
@@ -412,15 +271,57 @@ namespace ScriptEngine.Machine
 
                     var shouldRethrow = ShouldRethrowException(exc);
 
-                    if (MachineStopped != null && _stopManager != null)
-                        if (_stopManager.Breakpoints.StopOnAnyException(exc.MessageWithoutCodeFragment) || 
-                            shouldRethrow && _stopManager.Breakpoints.StopOnUncaughtException(exc.MessageWithoutCodeFragment))
-                            EmitStopOnException();
+                    EmitStopOnExceptionIfNeed(exc, shouldRethrow);
 
                     if (shouldRethrow)
+                    {
+                        RaiseCommandsFlowFinished();
                         throw;
+                    }
                 }
             }
+
+            RaiseCommandsFlowFinished();
+        }
+
+        private void RaiseCommandsFlowFinished()
+        {
+            WaitContinue();
+            CommandsFlowFinished?.Invoke(this, new MachineContextEventArgs(Environment.CurrentManagedThreadId));
+        }
+
+        public IValue Evaluate(string expression)
+        {
+            var code = CompileCached(expression, CompileExpressionModule);
+
+            var localScope = new AttachedContext(new UserScriptContextInstance(code), _currentFrame.Locals);
+
+            var frame = new ExecutionFrame
+            {
+                MethodName = code.Source.Name,
+                Module = code,
+                ThisScope = localScope,
+                Scopes = CreateFrameScopes(_currentFrame.Scopes, localScope),
+                Locals = Array.Empty<IVariable>(),
+                InstructionPointer = 0,
+            };
+
+            try
+            {
+                PushFrame(frame);
+                MainCommandLoop();
+            }
+            finally
+            {
+                PopFrame();
+            }
+
+            return _operationStack.Pop();
+        }
+        private StackRuntimeModule CompileCached(string code, Func<string, StackRuntimeModule> compile)
+        {
+            var cacheKey = HashCode.Combine(code, _module.Source.Location, _currentFrame.ToString()).ToString("X8");
+            return _executeModuleCache.GetOrAdd(cacheKey, _ => compile(code));
         }
 
         private bool ShouldRethrowException(ScriptException exc)
@@ -430,12 +331,10 @@ namespace ScriptEngine.Machine
                 return true;
             }
 
-            var callStackFrames = exc.RuntimeSpecificInfo as IList<ExecutionFrameInfo>;
-
-            if (callStackFrames == null)
+            if (exc.RuntimeSpecificInfo is not IList<ExecutionFrameInfo>)
             {
                 CreateFullCallstack();
-                callStackFrames = new List<ExecutionFrameInfo>(_fullCallstackCache);
+                IList<ExecutionFrameInfo> callStackFrames = new List<ExecutionFrameInfo>(_fullCallstackCache);
                 exc.RuntimeSpecificInfo = callStackFrames;
             }
 
@@ -507,7 +406,6 @@ namespace ScriptEngine.Machine
             catch (ScriptException exc)
             {
                 exc.SetPositionIfEmpty(GetPositionInfo());
-
                 throw;
             }
             catch (Exception exc)
@@ -520,8 +418,10 @@ namespace ScriptEngine.Machine
 
         private ErrorPositionInfo GetPositionInfo()
         {
-            var epi = new ErrorPositionInfo();
-            epi.LineNumber = _currentFrame.LineNumber;
+            var epi = new ErrorPositionInfo
+            {
+                LineNumber = _currentFrame.LineNumber
+            };
             if (_module.Source != null && epi.LineNumber > 0)
             {
                 epi.ModuleName = _module.Source.Name;
@@ -999,10 +899,7 @@ namespace ScriptEngine.Machine
 
         private void ResolveMethodProc(int arg)
         {
-            IRuntimeContextInstance context;
-            int methodId;
-            IValue[] argValues;
-            PrepareContextCallArguments(arg, out context, out methodId, out argValues);
+            PrepareContextCallArguments(arg, out IRuntimeContextInstance context, out int methodId, out IValue[] argValues);
 
             context.CallAsProcedure(methodId, argValues);
             NextInstruction();
@@ -1010,18 +907,14 @@ namespace ScriptEngine.Machine
 
         private void ResolveMethodFunc(int arg)
         {
-            IRuntimeContextInstance context;
-            int methodId;
-            IValue[] argValues;
-            PrepareContextCallArguments(arg, out context, out methodId, out argValues);
+            PrepareContextCallArguments(arg, out IRuntimeContextInstance context, out int methodId, out IValue[] argValues);
 
             if (!context.DynamicMethodSignatures && context.GetMethodInfo(methodId).ReturnType == typeof(void))
             {
                 throw RuntimeException.UseProcAsAFunction();
             }
 
-            IValue retVal;
-            context.CallAsFunction(methodId, argValues, out retVal);
+            context.CallAsFunction(methodId, argValues, out IValue retVal);
             _operationStack.Push(retVal);
             NextInstruction();
         }
@@ -1128,17 +1021,9 @@ namespace ScriptEngine.Machine
             else
             {
                 PopFrame();
-                if(DebugStepInProgress())
-                    EmitStopEventIfNecessary();
+                if(DebugMode && _currentState.HasFlag(DebugState.StepOut | DebugState.Next))
+                    EmitStopOnLineIfNeed();
             }
-        }
-
-        private bool DebugStepInProgress()
-        {
-            if (_stopManager == null)
-                return false;
-
-            return _stopManager.CurrentState == DebugState.SteppingOut || _stopManager.CurrentState == DebugState.SteppingOver;
         }
 
         private void JmpCounter(int arg)
@@ -1159,7 +1044,7 @@ namespace ScriptEngine.Machine
         private void Inc(int arg)
         {
             var operand = _operationStack.Pop().AsNumber();
-            operand = operand + 1;
+            operand++;
             _operationStack.Push(ValueFactory.Create(operand));
             NextInstruction();
         }
@@ -1218,12 +1103,7 @@ namespace ScriptEngine.Machine
 
         private void IteratorNext(int arg)
         {
-            var iterator = _currentFrame.LocalFrameStack.Peek() as CollectionEnumerator;
-            if (iterator == null)
-            {
-                throw new WrongStackConditionException();
-            }
-
+            var iterator = _currentFrame.LocalFrameStack.Peek() as CollectionEnumerator ?? throw new WrongStackConditionException();
             var hasNext = iterator.MoveNext();
             if (hasNext)
             {
@@ -1235,22 +1115,19 @@ namespace ScriptEngine.Machine
 
         private void StopIterator(int arg)
         {
-            var iterator = _currentFrame.LocalFrameStack.Pop() as CollectionEnumerator;
-            if (iterator == null)
-            {
-                throw new WrongStackConditionException();
-            }
-
+            var iterator = _currentFrame.LocalFrameStack.Pop() as CollectionEnumerator ?? throw new WrongStackConditionException();
             iterator.Dispose();
             NextInstruction();
         }
 
         private void BeginTry(int exceptBlockAddress)
         {
-            var info = new ExceptionJumpInfo();
-            info.HandlerAddress = exceptBlockAddress;
-            info.HandlerFrame = _currentFrame;
-            info.StackSize = _operationStack.Count;
+            var info = new ExceptionJumpInfo
+            {
+                HandlerAddress = exceptBlockAddress,
+                HandlerFrame = _currentFrame,
+                StackSize = _operationStack.Count
+            };
 
             _exceptionsStack.Push(info);
             NextInstruction();
@@ -1300,29 +1177,9 @@ namespace ScriptEngine.Machine
                 CodeStat_LineReached();
             }
 
-            EmitStopEventIfNecessary();
+            EmitStopOnLineIfNeed();
 
             NextInstruction();
-        }
-
-        private void EmitStopOnException()
-        {
-            if (MachineStopped != null && _stopManager != null)
-            {
-                CreateFullCallstack();
-                var args = new MachineStoppedEventArgs(MachineStopReason.Exception, Environment.CurrentManagedThreadId, "");
-                MachineStopped?.Invoke(this, args);
-            }
-        }
-
-        private void EmitStopEventIfNecessary()
-        {
-            if (MachineStopped != null && _stopManager != null && _stopManager.ShouldStopAtThisLine(_module.Source.Location, _currentFrame))
-            {
-                CreateFullCallstack();
-                var args = new MachineStoppedEventArgs(_stopManager.LastStopReason, Environment.CurrentManagedThreadId, _stopManager.LastStopErrorMessage);
-                MachineStopped?.Invoke(this, args);
-            }
         }
 
         private void CreateFullCallstack()
@@ -1587,7 +1444,7 @@ namespace ScriptEngine.Machine
                 return;
             }
 
-            _operationStack.Push(ValueFactory.Create(str.Substring(0, len)));
+            _operationStack.Push(ValueFactory.Create(str[..len]));
             NextInstruction();
         }
 
@@ -1866,11 +1723,8 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
-        private DateTime DropTimeFraction(in DateTime date)
-        {
-            return new DateTime(date.Year, date.Month, date.Day);
-        }
-        
+        private static DateTime DropTimeFraction(in DateTime date) => new(date.Year, date.Month, date.Day);
+
         private void BegOfWeek(int arg)
         {
             var date = DropTimeFraction(_operationStack.Pop().AsDate());
@@ -1930,7 +1784,7 @@ namespace ScriptEngine.Machine
         {
             //1,4,7,10
             var date = _operationStack.Pop().AsDate();
-            var month = date.Month;
+
             int quarterMonth;
             if (date.Month >= 1 && date.Month <= 3)
             {
@@ -1996,7 +1850,7 @@ namespace ScriptEngine.Machine
         {
             //1,4,7,10
             var date = _operationStack.Pop().AsDate();
-            var month = date.Month;
+            
             int quarterMonth;
             if (date.Month >= 1 && date.Month <= 3)
             {
@@ -2232,7 +2086,7 @@ namespace ScriptEngine.Machine
             NextInstruction();
         }
 
-        private decimal PowInt(decimal bas, uint exp)
+        private static decimal PowInt(decimal bas, uint exp)
         {
             decimal pow = 1;
 
@@ -2354,14 +2208,14 @@ namespace ScriptEngine.Machine
             IValue[] argValues;
 
             if (argCount == 0)
-                argValues = new IValue[0];
+                argValues = Array.Empty<IValue>();
             else
             {
                 var valueFromStack = _operationStack.Pop().GetRawValue();
                 if (valueFromStack is IValueArray array)
                     argValues = array.ToArray();
                 else
-                    argValues = new IValue[0];
+                    argValues = Array.Empty<IValue>();
             }
             
             var typeName = _operationStack.Pop().AsString();
@@ -2473,41 +2327,39 @@ namespace ScriptEngine.Machine
 
         public IList<IVariable> GetFrameLocals(int frameId)
         {
-            System.Diagnostics.Debug.Assert(_fullCallstackCache != null);
+            Debug.Assert(_fullCallstackCache != null);
             if (frameId < 0 || frameId >= _fullCallstackCache.Count)
-                return new IVariable[0];
+                return Array.Empty<IVariable>();
 
             var frame = _fullCallstackCache[frameId];
             return frame.FrameObject.Locals;
         }
 
-        private ExecutionFrameInfo FrameInfo(StackRuntimeModule module, ExecutionFrame frame)
+        private static ExecutionFrameInfo FrameInfo(StackRuntimeModule module, ExecutionFrame frame) => new()
         {
-            return new ExecutionFrameInfo()
+            LineNumber = frame.LineNumber,
+            MethodName = frame.MethodName,
+            Source = module.Source.Location,
+            FrameObject = frame
+        };
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
             {
-                LineNumber = frame.LineNumber,
-                MethodName = frame.MethodName,
-                Source = module.Source.Location,
-                FrameObject = frame
-            };
+                if (disposing)
+                {
+                    Cleanup();
+                }
+
+                disposedValue = true;
+            }
         }
 
-        // multithreaded instance
-        [ThreadStatic]
-        private static MachineInstance _currentThreadWorker;
-
-        private static void SetCurrentMachineInstance(MachineInstance current)
-            => _currentThreadWorker = current;
-
-        public static MachineInstance Current
+        public void Dispose()
         {
-            get
-            {
-                if(_currentThreadWorker == null)
-                    _currentThreadWorker = new MachineInstance();
-
-                return _currentThreadWorker;
-            }
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

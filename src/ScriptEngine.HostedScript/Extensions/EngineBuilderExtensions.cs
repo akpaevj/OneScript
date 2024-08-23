@@ -5,10 +5,13 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using OneScript.Contexts;
+using OneScript.DependencyInjection;
 using OneScript.Native.Extensions;
+using ScriptEngine.Debugging;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;
 
@@ -122,6 +125,15 @@ namespace ScriptEngine.HostedScript.Extensions
             builder.Services.Register<IScriptInformationFactory, NativeScriptInfoFactory>();
             builder.Services.UseNativeRuntime();
             
+            return builder;
+        }
+
+        public static IEngineBuilder UseDebugger(this IEngineBuilder builder, int port)
+        {
+            builder.Services.RegisterSingleton<IDebugController>(sc => {
+                return new DebugController(sc.Resolve<IServiceContainer>(), port);
+            });
+
             return builder;
         }
     }

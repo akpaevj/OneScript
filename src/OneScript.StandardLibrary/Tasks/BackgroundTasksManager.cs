@@ -25,7 +25,7 @@ namespace OneScript.StandardLibrary.Tasks
     public class BackgroundTasksManager : AutoContext<BackgroundTasksManager>, IDisposable
     {
         private readonly ExecutionContext _runtimeContext;
-        private List<BackgroundTask> _tasks = new List<BackgroundTask>();
+        private readonly List<BackgroundTask> _tasks = new List<BackgroundTask>();
 
         public BackgroundTasksManager(ExecutionContext runtimeContext)
         {
@@ -49,17 +49,8 @@ namespace OneScript.StandardLibrary.Tasks
             var taskCreationOptions = longRunning ? TaskCreationOptions.LongRunning : TaskCreationOptions.None;
             var worker = new Task(() =>
             {
-                MachineInstance.Current.SetMemory(_runtimeContext);
-                var debugger = _runtimeContext.Services.TryResolve<IDebugController>();
-                debugger?.AttachToThread();
-                try
-                {
-                    task.ExecuteOnCurrentThread();
-                }
-                finally
-                {
-                    debugger?.DetachFromThread();
-                }
+                MachineInstancesManager.GetCurrentThreadInstance().SetMemory(_runtimeContext);
+                task.ExecuteOnCurrentThread();
 
             }, taskCreationOptions);
 

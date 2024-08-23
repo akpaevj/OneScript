@@ -36,17 +36,18 @@ namespace oscript
 
         private static AppBehavior SelectParametrized(CmdLineHelper helper)
         {
-            var initializers = new Dictionary<string, Func<CmdLineHelper, AppBehavior>>();
-            
-            initializers.Add("-measure", MeasureBehavior.Create);
-            initializers.Add("-compile", ShowCompiledBehavior.Create);
-            initializers.Add("-check", CheckSyntaxBehavior.Create);
-            initializers.Add("-cgi", h => new CgiBehavior());
-            initializers.Add("-version", h => new ShowVersionBehavior());
-            initializers.Add("-v", h => new ShowVersionBehavior());
-            initializers.Add("-encoding", ProcessEncodingKey);
-            initializers.Add("-codestat", EnableCodeStatistics);
-            initializers.Add("-debug", DebugBehavior.Create);
+            var initializers = new Dictionary<string, Func<CmdLineHelper, AppBehavior>>
+            {
+                { "-measure", MeasureBehavior.Create },
+                { "-compile", ShowCompiledBehavior.Create },
+                { "-check", CheckSyntaxBehavior.Create },
+                { "-cgi", h => new CgiBehavior() },
+                { "-version", h => new ShowVersionBehavior() },
+                { "-v", h => new ShowVersionBehavior() },
+                { "-encoding", ProcessEncodingKey },
+                { "-codestat", EnableCodeStatistics },
+                { "-debug", DebugBehavior.Create }
+            };
 
             var param = helper.Parse(helper.Current());
             if(initializers.TryGetValue(param.Name.ToLowerInvariant(), out var action))

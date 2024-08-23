@@ -13,7 +13,7 @@ namespace ScriptEngine.Machine
     {
         public static T GetEnum<T>()
         {
-            var instance = MachineInstance.Current.Globals;
+            var instance = MachineInstancesManager.MainInstance.Globals;
             if (instance != null)
                 return instance.GetInstance<T>();
 
@@ -22,7 +22,7 @@ namespace ScriptEngine.Machine
 
         public static EnumerationContext GetEnum(Type type)
         {
-            return (EnumerationContext)MachineInstance.Current.Globals?.GetInstance(type);
+            return (EnumerationContext)MachineInstancesManager.MainInstance.Globals?.GetInstance(type);
         }
     }
 }

@@ -23,7 +23,7 @@ namespace ScriptEngine.Machine.Contexts
         private List<InternalMethInfo> _methodPtrs;
         private IdentifiersTrie<int> _methodNumbers;
 
-        private readonly object _locker = new object();
+        private readonly object _locker = new();
 
         private static readonly MethodInfo _genConvertParamMethod =
             typeof(InternalMethInfo).GetMethod("ConvertParam",

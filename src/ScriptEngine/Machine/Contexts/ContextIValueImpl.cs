@@ -65,7 +65,7 @@ namespace ScriptEngine.Machine.Contexts
 
         private bool TryDetermineOwnType()
         {
-            var mgr = MachineInstance.Current?.TypeManager;
+            var mgr = MachineInstancesManager.MainInstance.TypeManager;
             if (mgr?.IsKnownType(GetType()) ?? false)
             {
                 _type = mgr.GetTypeByFrameworkType(GetType());

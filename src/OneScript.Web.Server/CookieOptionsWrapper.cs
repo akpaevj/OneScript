@@ -24,7 +24,7 @@ namespace OneScript.Web.Server
             get
             {
                 if (_cookieOptions.Domain == null)
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
                 else
                     return BslStringValue.Create(_cookieOptions.Domain);
             }
@@ -40,7 +40,7 @@ namespace OneScript.Web.Server
         [ContextProperty("Путь", "Path")]
         public IValue Path
         {
-            get => _cookieOptions.Path == null ? BslNullValue.Instance : BslStringValue.Create(_cookieOptions.Path);
+            get => _cookieOptions.Path == null ? BslUndefinedValue.Instance : BslStringValue.Create(_cookieOptions.Path);
             set
             {
                 if (value is BslNullValue)
@@ -58,7 +58,7 @@ namespace OneScript.Web.Server
                 if (_cookieOptions.Expires.HasValue)
                     return BslDateValue.Create(_cookieOptions.Expires.Value.UtcDateTime);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
             set
             {
@@ -98,7 +98,7 @@ namespace OneScript.Web.Server
                 if (_cookieOptions.MaxAge.HasValue)
                     return BslNumericValue.Create((decimal)_cookieOptions.MaxAge.Value.TotalSeconds);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
             set
             {

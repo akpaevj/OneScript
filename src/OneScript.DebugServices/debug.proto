@@ -1,0 +1,167 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "OneScript.DebugServices.Grpc";
+
+import "google/protobuf/empty.proto";
+package OscriptDebug;
+
+service OscriptDebug {
+	// Мониторы событий и объектов отладки
+	rpc ThreadsMonitor(google.protobuf.Empty) returns (stream OsThreadStatus);
+	rpc InputOutputMonitor(stream OsInputOutput) returns (stream OsInputOutput);
+
+	// Сервисные методы
+	rpc StartDebug(google.protobuf.Empty) returns (google.protobuf.Empty);
+	rpc StopDebug(OsStopDebugRequest) returns (google.protobuf.Empty);
+
+	// Действия степпера отладки
+	rpc Continue(OsContinueRequest) returns (google.protobuf.Empty);
+	rpc Pause(OsPauseRequest) returns (google.protobuf.Empty);
+	rpc Next(OsNextRequest) returns (google.protobuf.Empty);
+	rpc StepIn(OsStepInRequest) returns (google.protobuf.Empty);
+	rpc StepOut(OsStepOutRequest) returns (google.protobuf.Empty);
+
+	// События конфигурации отладки
+	rpc SetBreakpoints(OsSetBreakpointsRequest) returns (OsSetBreakpointsResponse);
+	rpc SetExceptionBreakpoints(OsSetExceptionBreakpointRequest) returns (google.protobuf.Empty);
+	rpc GetStackFrames(OsGetStackFramesRequest) returns (OsGetStackFramesResponse);
+	rpc GetVariables(OsGetVariablesRequest) returns (OsGetVariablesResponse);
+	rpc GetEvaluatedVariables(OsGetEvaluatedVariablesRequest) returns (OsGetEvaluatedVariablesResponse);
+	rpc Evaluate(OsEvaluateRequest) returns (OsEvaluateResponse);
+	rpc GetThreads(google.protobuf.Empty) returns (OsGetThreadsResponse);
+	rpc GetProcessId(google.protobuf.Empty) returns (OsGetProcessIdResponse);
+}
+
+message OsInputOutput {
+	string message = 1;
+}
+
+message OsThreadStatus {
+	int32 thread_id = 1;
+	bool thread_stopped = 2;
+}
+
+message OsInitRequest {
+	// Флаг того, что осуществляется локальная отладка
+	bool local_debugging = 1;
+}
+
+message OsStopDebugRequest {
+	bool terminate = 1;
+}
+
+message OsContinueRequest {
+	int32 thread_id = 1;
+	bool single_thread = 2;
+}
+
+message OsPauseRequest {
+	int32 thread_id = 1;
+}
+
+message OsNextRequest {
+	int32 thread_id = 1;
+	bool single_thread = 2;
+}
+
+message OsStepInRequest {
+	int32 thread_id = 1;
+}
+
+message OsSourceBreakpoint {
+	string source = 1;
+	int32 line = 2;
+	string condition = 3;
+}
+
+message OsSetBreakpointsRequest {
+	repeated OsSourceBreakpoint breakpoints = 1;
+}
+
+message OsBreakpoint {
+	int32 id = 1;
+	string source = 2;
+	int32 line = 3;
+	bool verified = 4;
+}
+
+message OsSetBreakpointsResponse {
+	repeated OsBreakpoint breakpoints = 1;
+}
+
+message OsExceptionBreakpoint {
+	string id = 1;
+	string condition = 2;
+}
+
+message OsSetExceptionBreakpointRequest {
+	repeated OsExceptionBreakpoint breakpoints = 1;
+}
+
+message OsGetStackFramesRequest {
+	int32 thread_id = 1;
+}
+
+message OsVariable {
+	string name = 1;
+	bool is_structured = 2;
+	string presentation = 3;
+	string type_name = 4;
+	int32 children_handle_id = 5;
+}
+
+message OsStackFrame {
+	int32 index = 1;
+	string method_name = 2;
+	int32 line_number = 3;
+	string source = 4;
+	repeated OsVariable variables = 5;
+	int32 thread_id = 6;
+}
+
+message OsGetStackFramesResponse {
+	repeated OsStackFrame stack_frames = 1;
+}
+
+message OsGetVariablesRequest {
+	int32 thread_id = 1;
+	int32 frame_index = 2;
+	repeated int32 path = 3;
+}
+
+message OsGetVariablesResponse {
+	repeated OsVariable variables = 1;
+}
+
+message OsGetEvaluatedVariablesRequest {
+	string expression = 1;
+	int32 thread_id = 2;
+	int32 frame_index = 3;
+	repeated int32 path = 4;
+}
+
+message OsGetEvaluatedVariablesResponse {
+	repeated OsVariable variables = 1;
+}
+
+message OsEvaluateRequest {
+	int32 thread_id = 1;
+	int32 context_frame = 2;
+	string expression = 3;
+}
+
+message OsEvaluateResponse {
+	OsVariable variable = 1;
+}
+
+message OsStepOutRequest {
+	int32 thread_id = 1;
+}
+
+message OsGetThreadsResponse {
+	repeated int32 threads = 1;
+}
+
+message OsGetProcessIdResponse {
+	int32 process_id = 1;
+}

@@ -6,6 +6,7 @@
     <TargetFramework>$(TargetFrameworkVersion)</TargetFramework>
     <Configurations>Debug;Release;LinuxDebug</Configurations>
     <Platforms>AnyCPU</Platforms>
+	  <LangVersion>11.0</LangVersion>
   </PropertyGroup>
   
   <PropertyGroup>
@@ -49,5 +50,14 @@
   <ItemGroup>
     <Reference Include="CustomMarshalers" Condition="'$(TargetFramework)' == 'net452'" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.65.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.65.0" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="Debugging\debug.proto" GrpcServices="Server" />
+	</ItemGroup>
   
 </Project>

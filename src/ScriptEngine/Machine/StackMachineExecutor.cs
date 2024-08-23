@@ -30,17 +30,17 @@ namespace ScriptEngine.Machine
 
         private BslValue Executor(BslObjectValue target, IExecutableModule module, BslMethodInfo method, IValue[] arguments)
         {
-            if (!(method is MachineMethodInfo scriptMethodInfo))
+            if (method is not MachineMethodInfo scriptMethodInfo)
             {
                 throw new InvalidOperationException();
             }
             
-            if (!(target is IRunnable runnable))
+            if (target is not IRunnable runnable)
             {
                 throw new InvalidOperationException();
             }
             
-            var currentMachine = MachineInstance.Current;
+            var currentMachine = MachineInstancesManager.GetCurrentThreadInstance();
             if (!currentMachine.IsRunning)
             {
                 currentMachine.SetMemory(_environment);

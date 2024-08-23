@@ -41,12 +41,11 @@ namespace ScriptEngine.Hosting
             return b;
         }
         
-        [SuppressMessage("ReSharper", "RedundantTypeArgumentsOfMethod")]
         public static IEngineBuilder SetDefaultOptions(this IEngineBuilder builder)
         {
             var services = builder.Services;
             
-            services.Register<IServiceContainer>(sp => sp);
+            services.Register(sp => sp);
             services.RegisterSingleton<ITypeManager, DefaultTypeManager>();
             services.RegisterSingleton<IGlobalsManager, GlobalInstancesManager>();
             services.RegisterSingleton<RuntimeEnvironment>();
@@ -64,13 +63,13 @@ namespace ScriptEngine.Hosting
             
             services.Register<ExecutionContext>();
             services.EnablePredefinedIterables();
-            services.Register<PreprocessorHandlers>(sp =>
+            services.Register(sp =>
             {
                 var providers = sp.ResolveEnumerable<IDirectiveHandler>();
                 return new PreprocessorHandlers(providers);
             });
             
-            services.Register<KeyValueConfig>(sp =>
+            services.Register(sp =>
             {
                 var providers = sp.Resolve<ConfigurationProviders>();
                 return providers.CreateConfig();
@@ -84,12 +83,6 @@ namespace ScriptEngine.Hosting
         public static IEngineBuilder UseImports(this IEngineBuilder b)
         {
             b.Services.UseImports();
-            return b;
-        }
-
-        public static IEngineBuilder WithDebugger(this IEngineBuilder b, IDebugController debugger)
-        {
-            b.Services.RegisterSingleton(debugger);
             return b;
         }
     }

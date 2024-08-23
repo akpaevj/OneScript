@@ -4,45 +4,35 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using System;
 using System.IO;
 using System.Net;
-using System.Net.Sockets;
-using Serilog;
+using Microsoft.VisualStudio.Shared.VSCodeDebugProtocol.Serialization;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 
 namespace VSCode.DebugAdapter
 {
-    class Program
+    partial class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            StartSession(Console.OpenStandardInput(), Console.OpenStandardOutput());
-        }
-        
-        private static void StartSession(Stream input, Stream output)
-        {
-            var session = new OscriptDebugSession();
+            var app = Host.CreateDefaultBuilder(args)
+                .ConfigureServices((context, sc) =>
+                {
+                    var debugMode = context.Configuration.GetValue("debug", false);
 
-            Log.Logger = new LoggerConfiguration()
-                .ReadFrom.AppSettings()
-                .Enrich.FromLogContext()
-                .CreateLogger();
-            
-            try
-            {
-                Log.Logger.Information("Starting debug adapter");
-                session.Start(input, output);
-            }
-            catch (Exception e)
-            {
-                Log.Fatal(e, "Exception on session start");
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
-            
-            Log.Logger.Information("Session completed");
+                    if (debugMode)
+                        sc.AddHostedService<TcpDebugAdapterService>();
+                    else
+                        sc.AddHostedService<ConsoleDebugAdapterService>();
+                })
+                .Build();
+
+            await app.RunAsync();
         }
     }
 }

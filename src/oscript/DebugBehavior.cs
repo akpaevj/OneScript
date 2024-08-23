@@ -4,9 +4,9 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+using ScriptEngine.HostedScript.Extensions;
+using ScriptEngine.Hosting;
 using System;
-using OneScript.DebugProtocol;
-using OneScript.DebugServices;
 
 namespace oscript
 {
@@ -17,15 +17,6 @@ namespace oscript
         public DebugBehavior(int port, string path, string[] args) : base(path, args)
         {
             _port = port;
-        }
-
-        public override int Execute()
-        {
-            var tcpDebugServer = new BinaryTcpDebugServer(_port);
-                    
-            DebugController = tcpDebugServer.CreateDebugController();
-            
-            return base.Execute();
         }
 
         public static AppBehavior Create(CmdLineHelper helper)
@@ -66,6 +57,13 @@ namespace oscript
             }
 
             return path == null ? null : new DebugBehavior(port, path, helper.Tail());
+        }
+
+        public override void BuildEngine(IEngineBuilder engineBuilder)
+        {
+            base.BuildEngine(engineBuilder);
+
+            engineBuilder.UseDebugger(_port);
         }
     }
 }

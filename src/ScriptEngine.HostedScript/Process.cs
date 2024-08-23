@@ -30,7 +30,7 @@ namespace ScriptEngine.HostedScript
 
             try
             {
-                MachineInstance.Current.EventProcessor = new DefaultEventProcessor();
+                MachineInstancesManager.MainInstance.EventProcessor = new DefaultEventProcessor();
                 _engine.UpdateContexts();
                 _engine.NewObject(_module);
                 exitCode = 0;
@@ -46,7 +46,7 @@ namespace ScriptEngine.HostedScript
             }
             finally
             {
-                _engine.DebugController?.NotifyProcessExit(exitCode);
+                _engine.Stop(exitCode);
                 _engine.Dispose();
                 _engine = null;
             }

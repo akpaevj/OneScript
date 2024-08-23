@@ -24,13 +24,13 @@ namespace ScriptEngine.Machine.Contexts
     public class UserScriptContextInstance : ThisAwareScriptedObjectBase, IDebugPresentationAcceptor
     {
         public static readonly BilingualString OnInstanceCreationTerms =
-            new BilingualString("ПриСозданииОбъекта", "OnObjectCreate");
+            new("ПриСозданииОбъекта", "OnObjectCreate");
         
         public static readonly BilingualString PresentationGetProcessingTerms =
-            new BilingualString("ОбработкаПолученияПредставления", "PresentationGetProcessing");
+            new("ОбработкаПолученияПредставления", "PresentationGetProcessing");
         
         public static readonly BilingualString RaiseEventTerms =
-            new BilingualString("ВызватьСобытие", "RaiseEvent");
+            new("ВызватьСобытие", "RaiseEvent");
 
         private const int RAIZEEVENT_INDEX = 0;
         
@@ -242,9 +242,9 @@ namespace ScriptEngine.Machine.Contexts
             }
 
             if (eventArgs == null)
-                eventArgs = new IValue[0];
-            
-            MachineInstance.Current.EventProcessor?.HandleEvent(this, eventName, eventArgs);
+                eventArgs = Array.Empty<IValue>();
+
+            MachineInstancesManager.MainInstance.EventProcessor?.HandleEvent(this, eventName, eventArgs);
         }
 
         protected override int GetOwnVariableCount()

@@ -18,7 +18,7 @@ using OneScript.Types;
 namespace OneScript.Web.Server
 {
     [ContextClass("СловарьЗаголовков", "HeaderDictionary")]
-    public class HeaderDictionaryWrapper : AutoCollectionContext<HeaderDictionaryWrapper, KeyAndValueImpl>
+    public class HeaderDictionaryWrapper : AutoCollectionContext<HeaderDictionaryWrapper, KeyAndValueImpl>, IDebugPresentationAcceptor
     {
         private readonly IHeaderDictionary _items;
 
@@ -319,9 +319,7 @@ namespace OneScript.Web.Server
         }
 
         internal bool ContainsKey(IValue key)
-        {
-            return _items.ContainsKey(key.AsString());
-        }
+            => _items.ContainsKey(key.AsString());
 
         public IEnumerable<IValue> Keys()
         {
@@ -379,5 +377,10 @@ namespace OneScript.Web.Server
         [ContextMethod("ДобавитьРазделенныеЗапятымиЗначения", "AppendCommaSeparatedValues")]
         public void AppendCommaSeparated(string Key, ArrayImpl Values)
             => _items.AppendCommaSeparatedValues(Key, Values.Select(i => i.AsString()).ToArray());
+
+        void IDebugPresentationAcceptor.Accept(IDebugValueVisitor visitor)
+        {
+            visitor.ShowCollectionItems(this);
+        }
     }
 }

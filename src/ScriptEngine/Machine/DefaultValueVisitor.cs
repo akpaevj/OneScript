@@ -13,7 +13,7 @@ namespace ScriptEngine.Machine
 {
     public class DefaultValueVisitor : IDebugValueVisitor
     {
-        private readonly List<IVariable> _children = new List<IVariable>();
+        private readonly List<IVariable> _children = new();
         
         public void ShowProperties(IRuntimeContextInstance context)
         {

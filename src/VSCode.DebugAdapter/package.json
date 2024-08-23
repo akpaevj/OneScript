@@ -53,6 +53,15 @@
             "runtimeExecutable": null,
             "runtimeArgs": [],
             "debugPort": 2801
+          },
+          {
+            "name": "Отладка 1Script",
+            "type": "oscript",
+            "request": "attach",
+            "args": [],
+            "cwd": "${workspaceRoot}",
+            "debugHost": "localhost",
+            "debugPort": 2801
           }
         ],
         "configurationAttributes": {
@@ -151,6 +160,7 @@
             "env": {},
             "runtimeExecutable": null,
             "runtimeArgs": [],
+            "debugHost": "localhost",
             "debugPort": 2801,
             "waitOnStart": false
           }
@@ -193,9 +203,14 @@
                 },
                 "default": []
               },
+              "debugHost": {
+                "type": "string",
+                "description": "Адрес сервера отладки",
+                "default": "localhost"
+              },
               "debugPort": {
                 "type": "number",
-                "description": "Порт для запуска отладчика. Одновременные сеансы отладки должны быть разделены по портам",
+                "description": "Порт сервера отладки",
                 "default": 2801
               },
               "waitOnStart": {

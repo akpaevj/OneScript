@@ -5,6 +5,7 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
+using System.Linq;
 using OneScript.StandardLibrary;
 using ScriptEngine;
 using ScriptEngine.HostedScript;
@@ -18,13 +19,12 @@ namespace oscript
         protected string[] _scriptArgs;
         protected string _path;
 
+
         public ExecuteScriptBehavior(string path, string[] args)
         {
             _scriptArgs = args;
             _path = path;
         }
-        
-        public IDebugController DebugController { get; set; }
         
         public string CodeStatFile { get; set; }
 
@@ -41,7 +41,7 @@ namespace oscript
             SystemLogger.SetWriter(this);
 
             var builder = ConsoleHostBuilder.Create(_path);
-            builder.WithDebugger(DebugController);
+            BuildEngine(builder);
             CodeStatProcessor codeStatProcessor = null;
             if (CodeStatisticsEnabled)
             {
@@ -51,8 +51,6 @@ namespace oscript
 
             var hostedScript = ConsoleHostBuilder.Build(builder);
 
-                
-            
             var source = hostedScript.Loader.FromFile(_path);
             Process process;
             try
@@ -78,6 +76,8 @@ namespace oscript
 
             return result;
         }
+
+        public virtual void BuildEngine(IEngineBuilder engineBuilder) { }
 
         #region IHostApplication Members
 

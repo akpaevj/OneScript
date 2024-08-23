@@ -91,7 +91,7 @@ namespace OneScript.StandardLibrary.Tasks
 
             var parameters = Parameters is ArrayImpl array ?
                 array.ToArray() :
-                new IValue[0];
+                System.Array.Empty<IValue>();
 
             try
             {

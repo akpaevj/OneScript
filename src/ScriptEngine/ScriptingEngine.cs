@@ -15,16 +15,19 @@ using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Compiler;
+using ScriptEngine.Debugging;
 
 namespace ScriptEngine
 {
     public class ScriptingEngine : IDisposable
     {
         private AttachedScriptsFactory _attachedScriptsFactory;
-        private IDebugController _debugController;
         private IRuntimeEnvironment _runtimeEnvironment;
         
         private readonly ILibraryManager _libraryManager;
+
+        public delegate void EngineStoppedHandler(int stoppingCode);
+        public event EngineStoppedHandler EngineStopped;
 
         public ScriptingEngine(ITypeManager types,
             IGlobalsManager globals,
@@ -42,7 +45,6 @@ namespace ScriptEngine
             Loader = new ScriptSourceFactory();
             Services = services;
             ContextDiscoverer = new ContextDiscoverer(types, globals, services);
-            DebugController = services.TryResolve<IDebugController>();
             Loader.ReaderEncoding = options.FileReaderEncoding;
         }
 
@@ -69,16 +71,7 @@ namespace ScriptEngine
         public void AttachExternalAssembly(System.Reflection.Assembly asm, IRuntimeEnvironment globalEnvironment)
         {
             ContextDiscoverer.DiscoverClasses(asm);
-
-            //var lastCount = globalEnvironment.AttachedContexts.Count();
             ContextDiscoverer.DiscoverGlobalContexts(globalEnvironment, asm);
-
-            //var newCount = globalEnvironment.AttachedContexts.Count();
-            // while (lastCount < newCount)
-            // {
-            //     MachineInstance.Current.AttachContext(globalEnvironment.AttachedContexts[lastCount]);
-            //     ++lastCount;
-            // }
         }
         
         public void AttachExternalAssembly(System.Reflection.Assembly asm)
@@ -88,6 +81,9 @@ namespace ScriptEngine
 
         public void Initialize()
         {
+            // try start debugger
+            Services.TryResolve<IDebugController>()?.StartDebug();
+
             SetDefaultEnvironmentIfNeeded();
             EnableCodeStatistics();
             UpdateContexts();
@@ -102,7 +98,7 @@ namespace ScriptEngine
             {
                 ExecutionDispatcher.Current ??= Services.Resolve<ExecutionDispatcher>();
             }
-            MachineInstance.Current.SetMemory(Services.Resolve<ExecutionContext>());
+            MachineInstancesManager.MainInstance.SetMemory(Services.Resolve<ExecutionContext>());
         }
 
         private void SetDefaultEnvironmentIfNeeded()
@@ -171,19 +167,8 @@ namespace ScriptEngine
 
         public AttachedScriptsFactory AttachedScriptsFactory => _attachedScriptsFactory;
 
-        public IDebugController DebugController
-        {
-            get => _debugController;
-            private set
-            {
-                _debugController = value;
-                if (value != null)
-                {
-                    ProduceExtraCode |= CodeGenerationFlags.DebugCode;
-                    MachineInstance.Current.SetDebugMode(_debugController.BreakpointManager);
-                }
-            }
-        }
+        public void Stop(int stoppingCode) 
+            => EngineStopped?.Invoke(stoppingCode);
 
         private void EnableCodeStatistics()
         {
@@ -198,7 +183,6 @@ namespace ScriptEngine
 
         public void Dispose()
         {
-            DebugController?.Dispose();
             AttachedScriptsFactory.SetInstance(null);
         }
 

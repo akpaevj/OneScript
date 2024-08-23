@@ -17,7 +17,7 @@ using OneScript.StandardLibrary.Collections;
 namespace OneScript.Web.Server
 {
     [ContextClass("КукиЗапроса", "RequestCookies")]
-    public class RequestCookieCollectionWrapper : AutoCollectionContext<RequestCookieCollectionWrapper, KeyAndValueImpl>
+    public class RequestCookieCollectionWrapper : AutoCollectionContext<RequestCookieCollectionWrapper, KeyAndValueImpl>, IDebugPresentationAcceptor
     {
         private readonly IRequestCookieCollection _items;
 
@@ -35,5 +35,10 @@ namespace OneScript.Web.Server
 
         public override IEnumerator<KeyAndValueImpl> GetEnumerator()
             => _items.Select(c => new KeyAndValueImpl(BslStringValue.Create(c.Key), BslStringValue.Create(c.Value))).GetEnumerator();
+
+        public void Accept(IDebugValueVisitor visitor)
+        {
+            visitor.ShowCollectionItems(this);
+        }
     }
 }
