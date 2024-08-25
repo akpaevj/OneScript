@@ -6,14 +6,16 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 using System;
 
-namespace ScriptEngine.Machine
+namespace OneScript.Values
 {
-    public class WrongStackConditionException : ApplicationException
+    [Serializable]
+    public enum DataType
     {
-        public WrongStackConditionException()
-            : base("Внутренняя ошибка: неверное состояние стека")
-        {
-
-        }
+        Undefined,
+        String,
+        Number,
+        Date,
+        Boolean,
+        Null
     }
 }

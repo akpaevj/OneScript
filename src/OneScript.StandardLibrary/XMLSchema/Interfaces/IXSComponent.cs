@@ -10,6 +10,7 @@ using OneScript.Contexts;
 using OneScript.StandardLibrary.XMLSchema.Collections;
 using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.StandardLibrary.XMLSchema.Objects;
+using OneScript.Values;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.XMLSchema.Interfaces

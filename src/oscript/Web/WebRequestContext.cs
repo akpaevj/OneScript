@@ -14,6 +14,7 @@ using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
 using OneScript.StandardLibrary.Text;
+using OneScript.Values;
 using oscript.Web.Multipart;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;

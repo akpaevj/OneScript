@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Ionic.Zip;
 using OneScript.Contexts;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

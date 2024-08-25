@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {

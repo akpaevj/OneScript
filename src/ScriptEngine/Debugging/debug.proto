@@ -1,6 +1,6 @@
 ﻿syntax = "proto3";
 
-option csharp_namespace = "ScriptEngine.Debugging.Grpc";
+option csharp_namespace = "OneScript.Debug.Grpc";
 
 import "google/protobuf/empty.proto";
 package OscriptDebug;
@@ -108,6 +108,7 @@ message OsSourceBreakpoint {
 	string source = 1;
 	int32 line = 2;
 	optional string condition = 3;
+	optional string log_message = 4;
 }
 
 message OsSetBreakpointsRequest {
@@ -178,6 +179,7 @@ message OsGetVariablesRequest {
 	int32 frame_index = 2;
 	bool isLocal = 3;
 	repeated int32 path = 4;
+	string expression = 5;
 }
 
 message OsGetVariablesResponse {

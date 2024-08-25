@@ -1,8 +1,8 @@
 ﻿using OneScript.Contexts;
 using OneScript.Language;
+using OneScript.Values;
 using ScriptEngine.Debugging;
 using ScriptEngine.Machine.Contexts;
-using ScriptEngine.Machine.Debugging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +21,12 @@ namespace ScriptEngine.Machine
         private readonly object _locker = new();
         private (MachineStoppingReason StopReason, string ReasonDetails) _stopInfo = new(MachineStoppingReason.Breakpoint, string.Empty);
         private DebugState _currentState = DebugState.Run;
-        private IBreakpointManager _breakpointManager = null;
+        private IBreakpointsManager _breakpointManager = null;
         private bool DebugMode => _breakpointManager != null;
 
         public event EventHandler<MachineStoppedEventArgs> MachineStopped;
 
-        public void EnableDebugMode(IBreakpointManager breakpointManager)
+        public void EnableDebugMode(IBreakpointsManager breakpointManager)
         {
             lock (_locker)
                 _breakpointManager = breakpointManager;

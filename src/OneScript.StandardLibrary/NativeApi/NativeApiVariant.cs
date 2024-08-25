@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Runtime.InteropServices;
 using OneScript.StandardLibrary.Binary;
+using OneScript.Values;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
@@ -34,9 +35,9 @@ namespace OneScript.StandardLibrary.NativeApi
                 NativeApiProxy.FreeVariant(variant);
         }
 
-        public void Assign(IValue value, Int32 number = 0)
+        public void Assign(IValue value, int number = 0)
         {
-            var clrObject = value.UnwrapToClrObject();
+            var clrObject = value.ConvertToClrObject();
             switch (clrObject)
             {
                 case string str:

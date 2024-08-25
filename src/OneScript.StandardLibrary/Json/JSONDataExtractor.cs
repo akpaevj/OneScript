@@ -21,6 +21,7 @@ using OneScript.StandardLibrary.Binary;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using OneScript.Exceptions;
+using OneScript.Values;
 
 namespace OneScript.StandardLibrary.Json
 {

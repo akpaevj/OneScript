@@ -5,11 +5,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using ScriptEngine.Machine;
-using ScriptEngine.Machine.Debugging;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using OneScript.Commons;
 using OneScript.DependencyInjection;
+using OneScript.Debug;
 
 namespace ScriptEngine.Debugging
 {
@@ -48,7 +47,7 @@ namespace ScriptEngine.Debugging
             builder.Services.AddGrpc();
             builder.Services.AddSingleton(_serviceContainer.Resolve<ScriptingEngine>());
             builder.Services.AddSingleton<DebugServer>();
-            builder.Services.AddSingleton<IBreakpointManager, BreakpointManager>();
+            builder.Services.AddSingleton<IBreakpointsManager, BreakpointsManager>();
 
             _application = builder.Build();
             _application.MapGrpcService<DebugServer>();

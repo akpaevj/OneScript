@@ -11,6 +11,7 @@ using OneScript.Compilation;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
 using OneScript.Execution;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {

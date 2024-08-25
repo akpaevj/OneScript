@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System.Collections.Generic;
+using OneScript.Exceptions;
 using OneScript.Values;
 using ScriptEngine.Machine.Contexts;
 
@@ -27,7 +28,7 @@ namespace ScriptEngine.Machine
 
             try
             {
-                CLR_obj = ContextValuesMarshaller.ConvertToClrObject(obj);
+                CLR_obj = obj.ConvertToClrObject();
             }
             catch (ValueMarshallingException)
             {

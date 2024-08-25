@@ -9,6 +9,7 @@ using System;
 using System.Xml;
 using System.Xml.Xsl;
 using OneScript.Contexts;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -181,7 +182,7 @@ namespace OneScript.StandardLibrary.Xml
         [ContextMethod("ДобавитьПараметр", "AddParameter")]
         public void AddParameter(string fullName, IValue value)
         {
-            var _value = ContextValuesMarshaller.ConvertToClrObject(value);
+            var _value = value.ConvertToClrObject();
             _argumentList.AddParam(fullName, "", _value);
         }
 

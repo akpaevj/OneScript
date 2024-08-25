@@ -28,7 +28,6 @@ using OneScript.Native.Runtime;
 using OneScript.Sources;
 using OneScript.Types;
 using OneScript.Values;
-using ScriptEngine.Machine;
 
 namespace OneScript.Native.Compiler
 {

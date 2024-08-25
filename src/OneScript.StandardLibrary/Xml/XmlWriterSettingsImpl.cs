@@ -8,6 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using System.Xml;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Text;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -79,7 +80,7 @@ namespace OneScript.StandardLibrary.Xml
             IValue version = null, IValue indent = null, IValue indentAttributes = null,
             IValue indentChars = null)
         {
-            var _indent = ContextValuesMarshaller.ConvertParam<bool>(indent, true);
+            var _indent = ContextValuesMarshaller.ConvertParam(indent, true);
             var _indentAttributes = ContextValuesMarshaller.ConvertParam<bool>(indentAttributes);
 
             return new XmlWriterSettingsImpl(encoding?.AsString() ?? "UTF-8",

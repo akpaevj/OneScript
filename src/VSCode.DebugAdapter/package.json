@@ -115,7 +115,7 @@
               },
               "debugPort": {
                 "type": "number",
-                "description": "Порт для запуска отладчика. Одновременные сеансы отладки должны быть разделены по портам",
+                "description": "Порт для запуска отладчика",
                 "default": 2801
               },
               "outputEncoding": {
@@ -127,6 +127,11 @@
           },
           "attach": {
             "properties": {
+              "debugHost": {
+                "type": "string",
+                "description": "Адрес сервера отладки",
+                "default": "localhost"
+              },
               "debugPort": {
                 "type": "number",
                 "description": "Присоединиться к работающему процессу",

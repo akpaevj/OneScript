@@ -15,6 +15,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Binary;
 using OneScript.Types;
+using OneScript.Values;
 
 namespace OneScript.StandardLibrary.Zip
 {

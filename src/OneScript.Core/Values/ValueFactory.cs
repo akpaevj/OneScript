@@ -9,9 +9,8 @@ using System.Diagnostics;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
-using OneScript.Values;
 
-namespace ScriptEngine.Machine
+namespace OneScript.Values
 {
     public static class ValueFactory
     {
@@ -77,7 +76,7 @@ namespace ScriptEngine.Machine
                     break;
                 case DataType.Null:
                     if (string.Compare(presentation, "null", StringComparison.OrdinalIgnoreCase) == 0)
-                        result = ValueFactory.CreateNullValue();
+                        result = CreateNullValue();
                     else
                         throw new NotSupportedException("constant type is not supported");
 

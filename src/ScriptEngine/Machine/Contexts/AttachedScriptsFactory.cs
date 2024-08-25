@@ -18,6 +18,7 @@ using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Types;
 using ScriptEngine.Machine.Interfaces;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {

@@ -14,6 +14,7 @@ using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.Text;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -340,7 +341,7 @@ namespace OneScript.StandardLibrary.Json
             if (!IsOpen())
                 throw NotOpenException();
 
-            var clrValue = value.GetRawValue().UnwrapToClrObject();
+            var clrValue = value.GetRawValue().ConvertToClrObject();
             switch (clrValue)
             {
                 case string v:

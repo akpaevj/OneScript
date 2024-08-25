@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using OneScript.Commons;
 using OneScript.Contexts;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {

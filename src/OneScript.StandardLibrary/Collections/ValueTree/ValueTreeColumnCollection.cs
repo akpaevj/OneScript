@@ -12,6 +12,8 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
+using OneScript.Values;
+using ScriptEngine.Debugging;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;

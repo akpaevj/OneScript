@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Tasks;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using System;

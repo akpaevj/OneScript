@@ -11,6 +11,7 @@ using OneScript.Contexts;
 using OneScript.Contexts.Enums;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Text;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

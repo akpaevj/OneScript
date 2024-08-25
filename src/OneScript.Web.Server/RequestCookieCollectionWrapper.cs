@@ -13,6 +13,7 @@ using ScriptEngine.Machine.Contexts;
 using System.Collections.Generic;
 using System.Linq;
 using OneScript.StandardLibrary.Collections;
+using ScriptEngine.Debugging;
 
 namespace OneScript.Web.Server
 {

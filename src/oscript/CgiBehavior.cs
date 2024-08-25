@@ -13,6 +13,7 @@ using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.StandardLibrary;
+using OneScript.Values;
 using oscript.Web;
 
 using ScriptEngine.HostedScript;

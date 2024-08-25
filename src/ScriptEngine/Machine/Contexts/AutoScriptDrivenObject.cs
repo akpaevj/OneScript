@@ -12,6 +12,7 @@ using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Execution;
 using OneScript.Sources;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {

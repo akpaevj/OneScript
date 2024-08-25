@@ -4,25 +4,18 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
-using System;
-using System.IO;
+using Google.Protobuf.Collections;
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Net.Client;
 using Microsoft.VisualStudio.Shared.VSCodeDebugProtocol;
 using Microsoft.VisualStudio.Shared.VSCodeDebugProtocol.Messages;
-using System.Threading.Tasks;
-using System.Threading;
-using Newtonsoft.Json.Linq;
 using Microsoft.VisualStudio.Shared.VSCodeDebugProtocol.Utilities;
+using OneScript.Debug.Grpc;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using Grpc.Net.Client;
-using ScriptEngine.Debugging.Grpc;
-using Google.Protobuf.WellKnownTypes;
-using System.Net;
-using System.Net.Http;
-using Microsoft.Extensions.Options;
-using System.Text.RegularExpressions;
-using System.Collections.Concurrent;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace VSCode.DebugAdapter
 {
@@ -38,7 +31,7 @@ namespace VSCode.DebugAdapter
         private OscriptDebug.OscriptDebugClient _debuggeeClient = null;
 
         private readonly References<(int ThreadId, int FrameIndex)> _frameReferences = new();
-        private readonly References<(int ThreadId, int FrameIndex, bool IsLocal, List<int> Path)> _variableReferences = new();
+        private readonly References<(int ThreadId, int FrameIndex, bool IsLocal, List<int> Path, string Expression)> _variableReferences = new();
 
         public string AdapterID { get; private set; }
         public string ClientID { get; private set; }
@@ -79,7 +72,8 @@ namespace VSCode.DebugAdapter
                 SupportsExceptionFilterOptions = true,
                 SupportsEvaluateForHovers = true,
                 SupportTerminateDebuggee = true,
-                SupportsSingleThreadExecutionRequests = true
+                SupportsSingleThreadExecutionRequests = true,
+                SupportsLogPoints = true
             };
             response.ExceptionBreakpointFilters.Add(new ExceptionBreakpointsFilter()
             {
@@ -260,7 +254,8 @@ namespace VSCode.DebugAdapter
                     {
                         Line = LineFromDebugger(c.Line),
                         Source = responder.Arguments.Source.Path,
-                        Condition = c.Condition ?? ""
+                        Condition = c.Condition ?? "",
+                        LogMessage = c.LogMessage
                     })
                 );
 
@@ -367,7 +362,7 @@ namespace VSCode.DebugAdapter
                 var debuggerResponse = new ScopesResponse();
                 foreach (var osScope in debuggeeRespones.Scopes)
                 {
-                    var reference = _variableReferences.Add((ThreadId, FrameIndex, osScope.IsLocal, new()));
+                    var reference = _variableReferences.Add((ThreadId, FrameIndex, osScope.IsLocal, new(), string.Empty));
 
                     debuggerResponse.Scopes.Add(new Scope()
                     {
@@ -384,21 +379,22 @@ namespace VSCode.DebugAdapter
         {
             await WrapWithOutputError(async () =>
             {
+                var adapterResponse = new VariablesResponse();
+
                 var info = _variableReferences.Get(responder.Arguments.VariablesReference);
 
                 var adapterRequest = new OsGetVariablesRequest()
                 {
                     ThreadId = info.ThreadId,
                     FrameIndex = info.FrameIndex,
-                    IsLocal = info.IsLocal
+                    IsLocal = info.IsLocal,
+                    Expression = info.Expression,
                 };
                 adapterRequest.Path.AddRange(info.Path);
 
                 var appResponse = await _debuggeeClient.GetVariablesAsync(adapterRequest, cancellationToken: _cancellationToken);
 
-                var adapterResponse = new VariablesResponse();
-
-                foreach(var variable in appResponse.Variables)
+                foreach (var variable in appResponse.Variables)
                 {
                     var path = new List<int>();
                     path.AddRange(info.Path);
@@ -407,7 +403,7 @@ namespace VSCode.DebugAdapter
                     // Если у переменной есть свойства или индексатор, то сформируем ссылку на получение дочерних членов
                     var reference = 0;
                     if (variable.IsStructured)
-                        reference = _variableReferences.Add((info.ThreadId, info.FrameIndex, info.IsLocal, path));
+                        reference = _variableReferences.Add((info.ThreadId, info.FrameIndex, info.IsLocal, path, info.Expression));
 
                     adapterResponse.Variables.Add(new Variable()
                     {
@@ -435,7 +431,10 @@ namespace VSCode.DebugAdapter
                     Expression = responder.Arguments.Expression
                 };
                 var appResponse = await _debuggeeClient.EvaluateAsync(adapterRequest, cancellationToken: _cancellationToken);
-                var reference = _variableReferences.Add((ThreadId, FrameIndex, true, new()));
+
+                var reference = 0;
+                if (appResponse.Variable.IsStructured)
+                    reference = _variableReferences.Add((ThreadId, FrameIndex, true, new(), adapterRequest.Expression));
 
                 var adapterResponse = new EvaluateResponse()
                 {

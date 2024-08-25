@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using OneScript.Contexts;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Types;

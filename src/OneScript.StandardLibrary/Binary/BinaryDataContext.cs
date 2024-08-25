@@ -12,6 +12,7 @@ using System.Text;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -209,7 +210,7 @@ namespace OneScript.StandardLibrary.Binary
             if (other.SystemType == SystemType)
             {
                 var binData = other.GetRawValue() as BinaryDataContext;
-                Debug.Assert(binData != null);
+                System.Diagnostics.Debug.Assert(binData != null);
 
                 if (InMemory && binData.InMemory)
                 {

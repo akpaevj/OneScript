@@ -8,8 +8,9 @@ at http://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using OneScript.Contexts;
+using OneScript.Values;
 
-namespace ScriptEngine.Machine
+namespace ScriptEngine.Debugging
 {
     public class DefaultValueVisitor : IDebugValueVisitor
     {

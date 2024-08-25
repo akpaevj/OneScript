@@ -11,7 +11,6 @@ using OneScript.Contexts;
 using OneScript.Execution;
 using OneScript.Native.Compiler;
 using OneScript.Values;
-using ScriptEngine.Machine;
 
 namespace OneScript.Native.Runtime
 {

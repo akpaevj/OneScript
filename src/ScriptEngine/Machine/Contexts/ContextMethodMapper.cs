@@ -13,6 +13,7 @@ using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Language;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {

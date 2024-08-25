@@ -23,6 +23,7 @@ using OneScript.StandardLibrary.Collections.ValueTable;
 using OneScript.StandardLibrary.Regex;
 using OneScript.StandardLibrary.TypeDescriptions;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine;
 using ScriptEngine.Compiler;
 using ScriptEngine.Hosting;

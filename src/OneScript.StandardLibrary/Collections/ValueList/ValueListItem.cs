@@ -7,6 +7,7 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using OneScript.Contexts;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 
@@ -24,7 +25,7 @@ namespace OneScript.StandardLibrary.Collections.ValueList
         public ValueListItem()
         {
             _pictureHolder = ValueFactory.Create();
-            _presentationHolder = String.Empty;
+            _presentationHolder = string.Empty;
         }
         
         [ContextProperty("Значение", "Value")]

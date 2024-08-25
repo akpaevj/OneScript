@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Text;
+using OneScript.Values;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.Http

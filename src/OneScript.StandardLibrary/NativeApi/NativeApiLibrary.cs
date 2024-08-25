@@ -11,6 +11,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using OneScript.Exceptions;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 
 namespace OneScript.StandardLibrary.NativeApi
@@ -68,7 +69,7 @@ namespace OneScript.StandardLibrary.NativeApi
                 typeManager.RegisterType($"AddIn.{identifier}.{name}", default, typeof(NativeApiFactory));
         }
 
-        public IValue CreateComponent(ITypeManager typeManager, object host, String typeName, String componentName)
+        public IValue CreateComponent(ITypeManager typeManager, object host, string typeName, string componentName)
         {
             var typeDef = typeManager.GetTypeByName(typeName);
             var component = new NativeApiComponent(host, this, typeDef, componentName);

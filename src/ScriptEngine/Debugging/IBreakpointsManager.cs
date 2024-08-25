@@ -5,12 +5,12 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
-using ScriptEngine.Debugging.Grpc;
+using OneScript.Debug.Grpc;
 using System;
 
-namespace ScriptEngine.Machine.Debugging
+namespace ScriptEngine.Debugging
 {
-    public interface IBreakpointManager
+    public interface IBreakpointsManager
     {
         void SetBreakpoints(OsSourceBreakpoint[] breakpoints);
 

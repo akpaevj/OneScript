@@ -7,9 +7,9 @@ at http://mozilla.org/MPL/2.0/.
 
 using System;
 using System.Dynamic;
+using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
-using ScriptEngine.Machine;
 
 namespace OneScript.Values
 {
@@ -67,6 +67,14 @@ namespace OneScript.Values
         public virtual bool Equals(IValue other) => Equals((BslValue) other?.GetRawValue());
 
         public virtual IValue GetRawValue() => this;
+
+        public bool AsBoolean() => (bool)this;
+        public DateTime AsDate() => (DateTime)this;
+        public decimal AsNumber() => (decimal)this;
+        public string AsString() => (string)this;
+
+        public IRuntimeContextInstance AsObject()
+            => this is IRuntimeContextInstance ctx ? ctx : throw BslExceptions.ValueIsNotObjectException();
 
         #endregion
     }

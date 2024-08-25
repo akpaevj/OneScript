@@ -252,30 +252,10 @@ namespace ScriptEngine.Machine.Contexts
             return ConvertReturnValue(param, typeof(TRet));
         }
 
-        public static object ConvertToClrObject(IValue value)
-		{
-            if (value == null)
-                return null;
-            
-            var raw = value.GetRawValue();
-            return raw switch
-            {
-                BslNumericValue num => (decimal)num,
-                BslBooleanValue boolean => (bool)boolean,
-                BslStringValue str => (string)str,
-                BslDateValue date => (DateTime)date,
-                BslUndefinedValue _ => null,
-                BslNullValue _ => null,
-                BslTypeValue type => type.SystemType.ImplementingClass,
-                IObjectWrapper wrapper => wrapper.UnderlyingObject,
-                BslObjectValue obj => obj,
-                _ => throw ValueMarshallingException.NoConversionToCLR(raw.GetType())
-            };
-        }
-
         private static object CastToClrObject(IValue val)
         {
             var rawValue = val.GetRawValue();
+
             object objectRef;
             if (rawValue is IObjectWrapper wrapper)
             {
@@ -283,7 +263,7 @@ namespace ScriptEngine.Machine.Contexts
             }
             else
             {
-                objectRef = ConvertToClrObject(rawValue);
+                objectRef = rawValue.ConvertToClrObject();
             }
 
             return objectRef;

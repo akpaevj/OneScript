@@ -7,8 +7,8 @@ at http://mozilla.org/MPL/2.0/.
 
 using System.Collections.Generic;
 using OneScript.Contexts;
-using ScriptEngine.Debugging.Grpc;
-using ScriptEngine.Machine;
+using OneScript.Debug.Grpc;
+using OneScript.Values;
 
 namespace ScriptEngine.Debugging
 {

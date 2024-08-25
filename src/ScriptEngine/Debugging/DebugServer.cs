@@ -8,8 +8,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using OneScript.Commons;
 using ScriptEngine.Machine;
-using ScriptEngine.Debugging.Grpc;
-using ScriptEngine.Machine.Debugging;
+using OneScript.Debug.Grpc;
 using System.Threading;
 using System.Threading.Channels;
 using System;
@@ -24,14 +23,16 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Hosting;
 using System.IO;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
+using ScriptEngine.Debugging;
+using ScriptEngine;
 
-namespace ScriptEngine.Debugging
+namespace OneScript.Debug
 {
     public class DebugServer : OscriptDebug.OscriptDebugBase
     {
         private readonly TaskCompletionSource<int> _processExitedTask = new();
         private CancellationTokenSource _ioCts;
-        private readonly IBreakpointManager _breakpointManager;
+        private readonly IBreakpointsManager _breakpointManager;
         private readonly ScriptingEngine _scriptingEngine;
 
         private bool _debugEnabled = false;
@@ -39,7 +40,7 @@ namespace ScriptEngine.Debugging
         private readonly Channel<OsInputOutput> _ioEventsChannel = Channel.CreateUnbounded<OsInputOutput>();
         private readonly Channel<OsStoppedEvent> _stoppedEventsChannel = Channel.CreateUnbounded<OsStoppedEvent>();
 
-        public DebugServer(ScriptingEngine scriptingEngine, IBreakpointManager breakpointManager)
+        public DebugServer(ScriptingEngine scriptingEngine, IBreakpointsManager breakpointManager)
         {
             _breakpointManager = breakpointManager;
             _scriptingEngine = scriptingEngine;
@@ -196,39 +197,31 @@ namespace ScriptEngine.Debugging
 
             var response = new OsGetVariablesResponse();
 
-            if (frames != null)
+            IReadOnlyList<IVariable> srcVariables;
+
+            if (string.IsNullOrEmpty(request.Expression))
             {
-                var frame = frames[request.FrameIndex];
-
-                var srcVariables = request.IsLocal switch
+                if (frames != null)
                 {
-                    true => frame.FrameObject.Locals,
-                    _ => frame.FrameObject.ThisScope.Variables
-                };
+                    var frame = frames[request.FrameIndex];
 
-                if (request.Path.Count == 0)
-                    for (int i = 0; i < srcVariables.Count; i++)
+                    srcVariables = request.IsLocal switch
                     {
-                        var variable = srcVariables[i];
-                        var osVariable = visualizer.GetVariable(variable, i);
-                        response.Variables.Add(osVariable);
-                    }
-                else
-                {
-                    var variable = srcVariables[request.Path.First()];
-
-                    var path = request.Path.ToArray()[1..];
-                    foreach (var i in path)
-                        variable = visualizer.GetChildVariables(variable.Value)[i];
-
-                    var variables = visualizer.GetChildVariables(variable.Value);
-                    for (int i = 0; i < variables.Count; i++)
-                    {
-                        var osVariable = visualizer.GetVariable(variables[i], i);
-                        response.Variables.Add(osVariable);
-                    }
+                        true => frame.FrameObject.Locals,
+                        _ => frame.FrameObject.ThisScope.Variables
+                    };
                 }
+                else
+                    srcVariables = new List<IVariable>();
             }
+            else
+            {
+                var value = machineInstance.EvaluateInFrame(request.Expression, request.FrameIndex);
+                srcVariables = visualizer.GetChildVariables(value);
+            }
+
+            var variables = GetVariables(srcVariables, request.Path.ToList());
+            response.Variables.AddRange(variables);
 
             return Task.FromResult(response);
         }
@@ -326,6 +319,38 @@ namespace ScriptEngine.Debugging
                 var threadEvent = await _threadEventsChannel.Reader.ReadAsync(context.CancellationToken);
                 await responseStream.WriteAsync(threadEvent, context.CancellationToken);
             }
+        }
+
+        private IReadOnlyList<OsVariable> GetVariables(IReadOnlyList<IVariable> srcVariables, List<int> path)
+        {
+            var visualizer = new DefaultVariableVisualizer(_scriptingEngine.TypeManager);
+
+            var result = new List<OsVariable>();
+
+            if (path.Count == 0)
+                for (int i = 0; i < srcVariables.Count; i++)
+                {
+                    var variable = srcVariables[i];
+                    var osVariable = visualizer.GetVariable(variable, i);
+                    result.Add(osVariable);
+                }
+            else
+            {
+                var variable = srcVariables[path.First()];
+
+                var childPath = path.ToArray()[1..];
+                foreach (var i in childPath)
+                    variable = visualizer.GetChildVariables(variable.Value)[i];
+
+                var variables = visualizer.GetChildVariables(variable.Value);
+                for (int i = 0; i < variables.Count; i++)
+                {
+                    var osVariable = visualizer.GetVariable(variables[i], i);
+                    result.Add(osVariable);
+                }
+            }
+
+            return result;
         }
 
         private void MachineInstancesManager_MachineInstanceCreated(object sender, MachineContextEventArgs e)

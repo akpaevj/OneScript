@@ -9,8 +9,8 @@ using System;
 using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Types;
-using ScriptEngine.Debugging.Grpc;
-using ScriptEngine.Machine;
+using OneScript.Debug.Grpc;
+using OneScript.Values;
 
 namespace ScriptEngine.Debugging
 {

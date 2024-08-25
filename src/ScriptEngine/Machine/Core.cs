@@ -4,6 +4,7 @@ Mozilla Public License, v.2.0. If a copy of the MPL
 was not distributed with this file, You can obtain one 
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
+using OneScript.Values;
 using System;
 
 namespace ScriptEngine.Machine
@@ -143,21 +144,10 @@ namespace ScriptEngine.Machine
         public OperationCode Code;
         public int Argument;
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             return Enum.GetName(typeof(OperationCode), Code) + ":" + Argument.ToString();
         }
-    }
-
-    [Serializable]
-    public enum DataType
-    {
-        Undefined,
-        String,
-        Number,
-        Date,
-        Boolean,
-        Null
     }
 
     [Serializable]
@@ -184,7 +174,7 @@ namespace ScriptEngine.Machine
         public string Name;
         public AnnotationParameter[] Parameters;
 
-        public int ParamCount => Parameters?.Length ?? 0;
+        public readonly int ParamCount => Parameters?.Length ?? 0;
     }
 
     [Serializable]

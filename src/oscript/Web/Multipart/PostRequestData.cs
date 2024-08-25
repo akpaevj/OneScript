@@ -13,6 +13,7 @@ using System.Text;
 using OneScript.Contexts;
 using OneScript.StandardLibrary.Binary;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Values;
 
 namespace oscript.Web.Multipart
 {

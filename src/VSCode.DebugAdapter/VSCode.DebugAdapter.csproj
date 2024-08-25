@@ -42,4 +42,5 @@
   <ItemGroup>
     <Protobuf Include="..\ScriptEngine\Debugging\debug.proto" GrpcServices="Client" Link="Protos\debug.proto" />
   </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties package_1json__JsonSchema="extens " /></VisualStudio></ProjectExtensions>
 </Project>

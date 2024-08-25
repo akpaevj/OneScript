@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {

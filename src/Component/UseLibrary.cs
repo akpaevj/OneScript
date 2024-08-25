@@ -19,6 +19,7 @@ using OneScript.StandardLibrary.Xml;
 using OneScript.StandardLibrary.Zip;
 using OneScript.StandardLibrary.TypeDescriptions;
 using ScriptEngine.Machine;
+using OneScript.Values;
 
 namespace Component
 {

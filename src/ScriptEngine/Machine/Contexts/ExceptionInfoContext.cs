@@ -13,6 +13,7 @@ using OneScript.Exceptions;
 using OneScript.Language;
 using OneScript.Localization;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Types;
 
 namespace ScriptEngine.Machine.Contexts

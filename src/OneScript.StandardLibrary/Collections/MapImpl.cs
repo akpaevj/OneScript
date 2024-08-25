@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using OneScript.Contexts;
 using OneScript.Exceptions;
 using OneScript.Types;
+using OneScript.Values;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
 

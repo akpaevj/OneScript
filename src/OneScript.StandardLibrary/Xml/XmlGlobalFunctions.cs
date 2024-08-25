@@ -114,7 +114,7 @@ namespace OneScript.StandardLibrary.Xml
             }
 
             var dataType = givenType.GetRawValue() as BslTypeValue;
-            Debug.Assert(dataType != null);
+            System.Diagnostics.Debug.Assert(dataType != null);
 
             var typeValue = dataType.TypeValue;
 

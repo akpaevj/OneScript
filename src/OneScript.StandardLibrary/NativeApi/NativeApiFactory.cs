@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using OneScript.Types;
 using OneScript.Contexts;
 using ScriptEngine.Machine;
+using OneScript.Values;
 
 namespace OneScript.StandardLibrary.NativeApi
 {

@@ -6,16 +6,15 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Commons;
-using ScriptEngine.Debugging;
-using ScriptEngine.Debugging.Grpc;
+using OneScript.Debug.Grpc;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ScriptEngine.Machine.Debugging
+namespace ScriptEngine.Debugging
 {
-    public class BreakpointManager : IBreakpointManager
+    internal class BreakpointsManager : IBreakpointsManager
     {
         private readonly ConcurrentBag<OsSourceBreakpoint> _breakpoints = new();
         private readonly ConcurrentDictionary<string, string> _exceptionBreakpoints = new();

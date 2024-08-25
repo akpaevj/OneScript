@@ -18,6 +18,7 @@ using OneScript.Types;
 using RegExp = System.Text.RegularExpressions;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using OneScript.Values;
 
 namespace OneScript.StandardLibrary.Http
 {

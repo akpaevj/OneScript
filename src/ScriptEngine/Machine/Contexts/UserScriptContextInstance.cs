@@ -17,6 +17,7 @@ using OneScript.Execution;
 using OneScript.Localization;
 using OneScript.Types;
 using OneScript.Values;
+using ScriptEngine.Debugging;
 
 namespace ScriptEngine.Machine.Contexts
 {

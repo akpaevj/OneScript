@@ -14,6 +14,7 @@ using OneScript.Exceptions;
 using OneScript.Rcw;
 using OneScript.Values;
 using System.Reflection;
+using ScriptEngine.Debugging;
 
 namespace ScriptEngine.Machine.Contexts
 {

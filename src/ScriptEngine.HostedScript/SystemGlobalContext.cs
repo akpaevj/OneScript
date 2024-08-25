@@ -11,6 +11,7 @@ using OneScript.StandardLibrary.Collections;
 using OneScript.Sources;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using OneScript.Values;
 
 namespace ScriptEngine.HostedScript.Library
 {

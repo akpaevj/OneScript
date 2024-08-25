@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using OneScript.Commons;
+using OneScript.Values;
 
 namespace ScriptEngine.Machine.Contexts
 {
@@ -36,7 +37,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public override bool Equals(IValue other)
         {
-            if (!(other?.GetRawValue() is ClrEnumValueWrapper<T> otherWrapper))
+            if (other?.GetRawValue() is not ClrEnumValueWrapper<T> otherWrapper)
                 return false;
 
             return UnderlyingValue.Equals(otherWrapper.UnderlyingValue);

@@ -45,6 +45,7 @@
     <ProjectReference Include="..\OneScript.Core\OneScript.Core.csproj" />
     <ProjectReference Include="..\OneScript.Language\OneScript.Language.csproj" />
     <ProjectReference Include="..\OneScript.Native\OneScript.Native.csproj" />
+	 <PackageReference Include="Grpc.AspNetCore" Version="2.65.0" />
   </ItemGroup>
   
   <ItemGroup>
@@ -52,12 +53,10 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore" Version="2.65.0" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.65.0" />
+    <None Update="Debugging\debug.proto">
+      <GrpcServices>Server</GrpcServices>
+    </None>
+	  <Protobuf Include=".\Debugging\debug.proto" GrpcServices="Server" />
   </ItemGroup>
-
-	<ItemGroup>
-		<Protobuf Include="Debugging\debug.proto" GrpcServices="Server" />
-	</ItemGroup>
   
 </Project>

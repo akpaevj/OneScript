@@ -17,6 +17,7 @@ using OneScript.StandardLibrary;
 using OneScript.StandardLibrary.Tasks;
 using ScriptEngine.Machine.Contexts;
 using ScriptEngine.Debugging;
+using OneScript.Values;
 
 namespace ScriptEngine.HostedScript
 {

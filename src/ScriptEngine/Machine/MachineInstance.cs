@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using OneScript.Commons;
 using OneScript.Compilation.Binding;
 using OneScript.Contexts;
@@ -23,8 +22,6 @@ using OneScript.Types;
 using OneScript.Values;
 using ScriptEngine.Compiler;
 using ScriptEngine.Debugging;
-using System.Threading;
-using System.Runtime.ConstrainedExecution;
 
 namespace ScriptEngine.Machine
 {

@@ -11,6 +11,7 @@ using System.IO;
 using OneScript.Contexts;
 using OneScript.DependencyInjection;
 using OneScript.Native.Extensions;
+using OneScript.Values;
 using ScriptEngine.Debugging;
 using ScriptEngine.Hosting;
 using ScriptEngine.Machine;

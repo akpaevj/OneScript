@@ -15,7 +15,6 @@ using OneScript.Language;
 using OneScript.Localization;
 using OneScript.Types;
 using OneScript.Values;
-using ScriptEngine.Machine;
 
 [assembly: InternalsVisibleTo("OneScript.Dynamic.Tests")]
 

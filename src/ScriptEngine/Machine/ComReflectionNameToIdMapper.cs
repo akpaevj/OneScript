@@ -11,6 +11,7 @@ using System.Reflection;
 using OneScript.Commons;
 using OneScript.Contexts;
 using OneScript.Exceptions;
+using OneScript.Values;
 using ScriptEngine.Machine.Contexts;
 
 namespace ScriptEngine.Machine
