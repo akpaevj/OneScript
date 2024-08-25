@@ -5,6 +5,7 @@ using ScriptEngine.Debugging;
 using ScriptEngine.Machine.Contexts;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Text;
@@ -19,12 +20,12 @@ namespace ScriptEngine.Machine
         private readonly ManualResetEvent _resetEvent = new(true);
 
         private readonly object _locker = new();
-        private (MachineStoppingReason StopReason, string ReasonDetails) _stopInfo = new(MachineStoppingReason.Breakpoint, string.Empty);
+        private (MachineStoppingReason StopReason, string ReasonDetails, bool IsLogMessage) _stopInfo = new(MachineStoppingReason.Breakpoint, string.Empty, false);
         private DebugState _currentState = DebugState.Run;
         private IBreakpointsManager _breakpointManager = null;
         private bool DebugMode => _breakpointManager != null;
 
-        public event EventHandler<MachineStoppedEventArgs> MachineStopped;
+        public event EventHandler<MachineStoppedEventArgs> Stopped;
 
         public void EnableDebugMode(IBreakpointsManager breakpointManager)
         {
@@ -50,7 +51,7 @@ namespace ScriptEngine.Machine
 
             if (raiseEvent)
             {
-                _stopInfo = new(MachineStoppingReason.Pause, string.Empty);
+                _stopInfo = new(MachineStoppingReason.Pause, string.Empty, false);
                 InvokeMachineStopped();
             }
         }
@@ -148,7 +149,7 @@ namespace ScriptEngine.Machine
 
             if (_breakpointManager.NeedStopOnException(ex, !needRethrow))
             {
-                _stopInfo = new(MachineStoppingReason.Exception, ex.Message);
+                _stopInfo = new(MachineStoppingReason.Exception, ex.Message, false);
                 
                 CreateFullCallstack();
                 InvokeMachineStopped();
@@ -173,19 +174,37 @@ namespace ScriptEngine.Machine
             };
 
             if (needStop)
-                _stopInfo = new(MachineStoppingReason.Step, error);
+                _stopInfo = new(MachineStoppingReason.Step, error, false);
             else
-                try
+            {
+                if (_breakpointManager.TryGetBreakpoint(_currentFrame.Module.Source.Location, _currentFrame.LineNumber, out var breakpoint))
                 {
-                    needStop = _breakpointManager.NeedStopOnBreakpoint(_currentFrame.Module.Source.Location, _currentFrame.LineNumber);
+                    needStop = true;
+
+                    // Если условие брейкпоинта заполнено, то его проверяем как для log point для и для остановки
+                    if (!string.IsNullOrEmpty(breakpoint.Condition))
+                    {
+                        try
+                        {
+                            needStop = EvaluateInFrame(breakpoint.Condition, _currentFrame).AsBoolean();
+                        }
+                        catch (Exception ex)
+                        {
+                            needStop = true;
+                            error = $"Не удалось выполнить условие точки останова: {ex.Message}";
+                        }
+                    }
 
                     if (needStop)
-                        _stopInfo = new(MachineStoppingReason.Breakpoint, error);
+                    {
+                        // Если это точка останова с log point, то событие Stopped отработаем, но реально поток останавливать не будем
+                        if (!string.IsNullOrEmpty(breakpoint.LogMessage))
+                            _stopInfo = new(MachineStoppingReason.Breakpoint, breakpoint.LogMessage, true);
+                        else
+                            _stopInfo = new(MachineStoppingReason.Breakpoint, error, false);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    error = $"Не удалось выполнить условие точки останова: {ex.Message}";
-                }
+            }
 
             if (needStop)
             {
@@ -198,9 +217,11 @@ namespace ScriptEngine.Machine
         {
             if (DebugMode)
             {
-                _resetEvent.Reset();
-                var args = new MachineStoppedEventArgs(Environment.CurrentManagedThreadId, _stopInfo.StopReason, _stopInfo.ReasonDetails);
-                MachineStopped?.Invoke(this, args);
+                if (!_stopInfo.IsLogMessage)
+                    _resetEvent.Reset();
+
+                var args = new MachineStoppedEventArgs(Environment.CurrentManagedThreadId, _stopInfo.StopReason, _stopInfo.ReasonDetails, _stopInfo.IsLogMessage);
+                Stopped?.Invoke(this, args);
             }
         }
     }

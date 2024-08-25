@@ -364,7 +364,7 @@ namespace OneScript.Debug
         private async void MachineInstance_CommandsFlowRun(object sender, MachineContextEventArgs e)
         {
             var machineInstance = sender as MachineInstance;
-            machineInstance.MachineStopped += MachineInstanceStopped;
+            machineInstance.Stopped += MachineInstanceStopped;
 
             await _threadEventsChannel.Writer.WriteAsync(new OsThreadStatus()
             {
@@ -376,7 +376,7 @@ namespace OneScript.Debug
         private async void MachineInstance_CommandsFlowFinished(object sender, MachineContextEventArgs e)
         {
             var machineInstance = sender as MachineInstance;
-            machineInstance.MachineStopped -= MachineInstanceStopped;
+            machineInstance.Stopped -= MachineInstanceStopped;
 
             await _threadEventsChannel.Writer.WriteAsync(new OsThreadStatus()
             {
@@ -400,7 +400,8 @@ namespace OneScript.Debug
             {
                 ThreadId = args.ThreadId,
                 Reason = reason,
-                Text = args.Details
+                Text = args.Details,
+                IsLogMessage = args.IsLogMessage
             });
 
             machineInstance.WaitContinue();

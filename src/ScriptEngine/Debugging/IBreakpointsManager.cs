@@ -16,7 +16,7 @@ namespace ScriptEngine.Debugging
 
         void SetExceptionBreakpoints(OsExceptionBreakpoint[] breakpoints);
 
-        bool NeedStopOnBreakpoint(string source, int line);
+        bool TryGetBreakpoint(string source, int line, out OsSourceBreakpoint breakpoint);
         
         bool NeedStopOnException(Exception ex, bool userHandled);
 

@@ -217,25 +217,36 @@ namespace VSCode.DebugAdapter
                     {
                         var item = eventsStream.ResponseStream.Current;
 
-                        var reason = item.Reason switch
+                        // Если это log point, то событие оснтановки вызывать не будем, а просто отпишем в лог
+                        if (item.IsLogMessage)
                         {
-                            OsStoppedEventReason.Step => StoppedEvent.ReasonValue.Step,
-                            OsStoppedEventReason.Breakpoint => StoppedEvent.ReasonValue.Breakpoint,
-                            OsStoppedEventReason.Exception => StoppedEvent.ReasonValue.Exception,
-                            OsStoppedEventReason.Entry => StoppedEvent.ReasonValue.Entry,
-                            OsStoppedEventReason.Goto => StoppedEvent.ReasonValue.Goto,
-                            OsStoppedEventReason.FunctionBreakpoint => StoppedEvent.ReasonValue.FunctionBreakpoint,
-                            OsStoppedEventReason.DataBreakpoint => StoppedEvent.ReasonValue.DataBreakpoint,
-                            OsStoppedEventReason.InstructionBreakpoint => StoppedEvent.ReasonValue.InstructionBreakpoint,
-                            _ => throw new NotImplementedException(),
-                        };
+                            Protocol.SendEvent(new OutputEvent(item.Text)
+                            {
+                                Category = OutputEvent.CategoryValue.Console
+                            });
+                        }
+                        else
+                        {
+                            var reason = item.Reason switch
+                            {
+                                OsStoppedEventReason.Step => StoppedEvent.ReasonValue.Step,
+                                OsStoppedEventReason.Breakpoint => StoppedEvent.ReasonValue.Breakpoint,
+                                OsStoppedEventReason.Exception => StoppedEvent.ReasonValue.Exception,
+                                OsStoppedEventReason.Entry => StoppedEvent.ReasonValue.Entry,
+                                OsStoppedEventReason.Goto => StoppedEvent.ReasonValue.Goto,
+                                OsStoppedEventReason.FunctionBreakpoint => StoppedEvent.ReasonValue.FunctionBreakpoint,
+                                OsStoppedEventReason.DataBreakpoint => StoppedEvent.ReasonValue.DataBreakpoint,
+                                OsStoppedEventReason.InstructionBreakpoint => StoppedEvent.ReasonValue.InstructionBreakpoint,
+                                _ => throw new NotImplementedException(),
+                            };
 
-                        Protocol.SendEvent(new StoppedEvent()
-                        {
-                            ThreadId = item.ThreadId,
-                            Reason = reason,
-                            Text = item.Text
-                        });
+                            Protocol.SendEvent(new StoppedEvent()
+                            {
+                                ThreadId = item.ThreadId,
+                                Reason = reason,
+                                Text = item.Text
+                            });
+                        }
                     }
                     else
                         await Task.Delay(1);
@@ -255,7 +266,7 @@ namespace VSCode.DebugAdapter
                         Line = LineFromDebugger(c.Line),
                         Source = responder.Arguments.Source.Path,
                         Condition = c.Condition ?? "",
-                        LogMessage = c.LogMessage
+                        LogMessage = c.LogMessage ?? ""
                     })
                 );
 

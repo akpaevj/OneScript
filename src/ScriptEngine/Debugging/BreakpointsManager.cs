@@ -44,8 +44,12 @@ namespace ScriptEngine.Debugging
             return needStop;
         }
 
-        public bool NeedStopOnBreakpoint(string source, int line)
-            => _breakpoints.FirstOrDefault(c => c.Source.ToUpper() == source.ToUpper() && c.Line == line) is not null;
+        public bool TryGetBreakpoint(string source, int line, out OsSourceBreakpoint breakpoint)
+        {
+            breakpoint = _breakpoints.FirstOrDefault(c => c.Source.ToUpper() == source.ToUpper() && c.Line == line);
+
+            return breakpoint != null;
+        }
 
         public void SetBreakpoints(OsSourceBreakpoint[] breakpoints)
         {
