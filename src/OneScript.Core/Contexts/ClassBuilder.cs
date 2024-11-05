@@ -66,7 +66,7 @@ namespace OneScript.Contexts
             }
             else
             {
-                var markup = new ContextMethodAttribute(nativeMethod.Name);
+                var markup = new ContextMethodAttribute(nativeMethod.Name, null); // no alias
                 _methods.Add(new ContextMethodInfo(nativeMethod, markup));
             }
 
