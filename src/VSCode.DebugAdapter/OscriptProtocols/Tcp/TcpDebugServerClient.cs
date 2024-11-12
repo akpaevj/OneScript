@@ -13,6 +13,7 @@ using OneScript.DebugProtocol;
 using OneScript.DebugProtocol.Abstractions;
 using OneScript.DebugProtocol.TcpServer;
 using Serilog;
+using VSCode.DebugAdapter.OscriptProtocols;
 
 namespace VSCode.DebugAdapter
 {
@@ -83,6 +84,7 @@ namespace VSCode.DebugAdapter
         private void RunEventsListener(ICommunicationChannel channelToListen)
         {
             var server = new DefaultMessageServer<TcpProtocolDtoBase>(channelToListen);
+            server.ServerThreadName = "dbg-client-event-listener";
             
             _processor = new RpcProcessor(server);
             _processor.AddChannel(
@@ -217,6 +219,20 @@ namespace VSCode.DebugAdapter
         {
             WriteCommand(null);
             return GetResponse<int>();
+        }
+
+        public int GetProtocolVersion()
+        {
+            WriteCommand(null);
+            try
+            {
+                return ProtocolVersions.Adjust(GetResponse<int>());
+            }
+            catch (RpcOperationException e)
+            {
+                Log.Information("Checking version returned error: {Err}", e.Message);
+                return ProtocolVersions.SafestVersion;
+            }
         }
     }
 }
