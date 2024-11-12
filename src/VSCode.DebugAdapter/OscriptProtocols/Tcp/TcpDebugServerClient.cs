@@ -120,10 +120,10 @@ namespace VSCode.DebugAdapter
         private T GetResponse<T>()
         {
             var rpcResult = _processor.GetResult();
-            Log.Verbose("Response received {Result} = {Value}", rpcResult.Id, rpcResult.ReturnValue);
+            Log.Debug("Response received {Result} = {Value}", rpcResult.Id, rpcResult.ReturnValue);
             if (rpcResult.ReturnValue is RpcExceptionDto excDto)
             {
-                Log.Verbose("RPC Exception received: {Description}", excDto.Description);
+                Log.Debug("RPC Exception received: {Description}", excDto.Description);
                 throw new RpcOperationException(excDto);
             }
             

@@ -55,7 +55,8 @@ namespace OneScript.DebugServices
         {
             var token = _threadManager.GetTokenForThread(e.ThreadId);
             token.Reset();
-            _callbackService.ThreadStopped(e.ThreadId, ConvertStopReason(e.StopReason), e.ErrorMessage);
+            
+            _callbackService.ThreadStoppedEx(e.ThreadId, ConvertStopReason(e.StopReason), e.ErrorMessage);
             token.Wait();
         }
 

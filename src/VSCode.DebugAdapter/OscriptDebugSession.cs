@@ -274,7 +274,16 @@ namespace VSCode.DebugAdapter
 
         }
 
-        public void ThreadStopped(int threadId, ThreadStopReason reason, string errorMessage)
+        public void ThreadStopped(int threadId, ThreadStopReason reason)
+        {
+            LogEventOccured();
+            _framesHandles.Reset();
+            _variableHandles.Reset();
+
+            SendEvent(new StoppedEvent(threadId, reason.ToString()));
+        }
+        
+        public void ThreadStoppedEx(int threadId, ThreadStopReason reason, string errorMessage)
         {
             LogEventOccured();
             _framesHandles.Reset();
