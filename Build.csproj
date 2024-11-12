@@ -133,7 +133,7 @@
     <Target Name="BuildDebugger">
         <PropertyGroup>
             <DebuggerProject>src/VSCode.DebugAdapter/VSCode.DebugAdapter.csproj</DebuggerProject>
-            <LocalResolvedOutput>$(DebugAdapterDir)</LocalResolvedOutput>
+            <LocalResolvedOutput>$(DebugAdapterDir)/bin</LocalResolvedOutput>
         </PropertyGroup>
         
         <MSBuild Projects="$(DebuggerProject)" Properties="OutputPath=$(LocalResolvedOutput);Configuration=Release"/>
