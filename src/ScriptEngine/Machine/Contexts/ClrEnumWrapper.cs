@@ -6,6 +6,7 @@ at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
 using System;
+using System.Collections.Generic;
 using OneScript.Contexts.Enums;
 using OneScript.Types;
 
@@ -31,6 +32,11 @@ namespace ScriptEngine.Machine.Contexts
 
         public virtual ClrEnumValueWrapper<T> FromNativeValue(T native)
         {
+            /* TODO: benchmark 
+             return ((List<ClrEnumValueWrapper<T>>)ValuesInternal)
+                .Find(x => x.UnderlyingValue.Equals(native))
+                ?? throw new InvalidOperationException($"Item '{native}' not found");
+             */
             foreach (var value in ValuesInternal)
             {
                 var wrapper = (ClrEnumValueWrapper<T>) value;
@@ -85,4 +91,36 @@ namespace ScriptEngine.Machine.Contexts
             Instance = instance;
         }
     }
+
+    public abstract class ClrEnumWrapperCached<T> : ClrEnumWrapper<T> where T : struct
+    {
+        private static readonly Dictionary<T, ClrEnumValueWrapper<T>> _valuesCache
+            = new Dictionary<T, ClrEnumValueWrapper<T>>();
+
+        protected ClrEnumWrapperCached(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) 
+            : base(typeRepresentation, valuesType)
+        {
+            _valuesCache.Clear();
+        }
+        
+        protected void MakeValue(string name, string alias, T enumValue)
+        {
+            _valuesCache[enumValue] = this.WrapClrValue(name, alias, enumValue);
+        }
+ 
+        public static new ClrEnumValueWrapper<T> FromNativeValue(T native)
+        {
+            _valuesCache.TryGetValue(native, out ClrEnumValueWrapper<T> value);
+            return value;
+        }
+
+        public static TE CreateInstance<TE>(ITypeManager typeManager,EnumCreationDelegate<TE> creator)
+            where TE: ClrEnumWrapperCached<T>
+        {
+           var instance = EnumContextHelper.CreateClrEnumInstance<TE, T>(typeManager, creator);
+ 
+           OnInstanceCreation(instance);
+           return instance;
+        }
+   }
 }

@@ -190,10 +190,10 @@ namespace OneScript.StandardLibrary.XMLSchema.Objects
         }
 
         [ContextProperty("Форма", "Form")]
-        public XSForm Form
+        public ClrEnumValueWrapper<XmlSchemaForm> Form
         {
-            get => XSForm.FromNativeValue(_attribute.Form);
-            set => _attribute.Form = XSForm.ToNativeValue(value);
+            get => EnumerationXSForm.FromNativeValue(_attribute.Form);
+            set => _attribute.Form = value.UnderlyingValue;
         }
 
         [ContextProperty("ЭтоГлобальноеОбъявление", "IsGlobal")]

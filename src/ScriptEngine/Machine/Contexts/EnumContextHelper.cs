@@ -51,7 +51,7 @@ namespace ScriptEngine.Machine.Contexts
             return new TypeDescriptor(
                 metadata.TypeUUID == default ? Guid.NewGuid() : Guid.Parse(metadata.TypeUUID),
                 "Перечисление" + metadata.Name,
-                metadata.Alias != default? "Enum" + metadata.Alias : default,
+                metadata.Alias != default ? "Enum" + metadata.Alias : default,
                 enumType
             );
         }
@@ -70,15 +70,8 @@ namespace ScriptEngine.Machine.Contexts
             where TOwner : EnumerationContext
             where TEnum : struct
         {
-            TOwner instance;
-
-            TypeDescriptor enumType;
-            TypeDescriptor enumValType;
-
-            (enumType, enumValType) = EnumContextHelper.RegisterEnumType<TOwner, ClrEnumValueWrapper<TEnum>>(typeManager);
-
-            instance = creator(enumType, enumValType);
-            return instance;
+            var (enumType, enumValType) = RegisterEnumType<TOwner, ClrEnumValueWrapper<TEnum>>(typeManager);
+            return creator(enumType, enumValType);
         }
         
         public static ClrEnumValueWrapper<T> WrapClrValue<T>(
