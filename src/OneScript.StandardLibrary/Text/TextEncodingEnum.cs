@@ -11,6 +11,7 @@ using OneScript.Exceptions;
 using OneScript.Types;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using OneScript.Values;
 
 namespace OneScript.StandardLibrary.Text
 {

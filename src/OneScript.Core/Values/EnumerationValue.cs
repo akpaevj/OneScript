@@ -9,10 +9,10 @@ using OneScript.Commons;
 using OneScript.Exceptions;
 using OneScript.Localization;
 using OneScript.Types;
-using OneScript.Values;
 using System;
+using ScriptEngine.Machine;
 
-namespace ScriptEngine.Machine.Contexts
+namespace OneScript.Values
 {
     public abstract class EnumerationValue : BslValue
     {

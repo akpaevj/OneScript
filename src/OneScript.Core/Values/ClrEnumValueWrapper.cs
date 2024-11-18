@@ -8,7 +8,7 @@ at http://mozilla.org/MPL/2.0/.
 using OneScript.Commons;
 using OneScript.Types;
 
-namespace ScriptEngine.Machine.Contexts
+namespace OneScript.Values
 {
     public class ClrEnumValueWrapper<T> : EnumerationValue, IObjectWrapper where T :struct
     {
@@ -24,7 +24,7 @@ namespace ScriptEngine.Machine.Contexts
 
         public T UnderlyingValue  => _realValue;
 
-        public override bool Equals(IValue other)
+        public override bool Equals(BslValue other)
         {
             if (!(other?.GetRawValue() is ClrEnumValueWrapper<T> otherWrapper))
                 return false;

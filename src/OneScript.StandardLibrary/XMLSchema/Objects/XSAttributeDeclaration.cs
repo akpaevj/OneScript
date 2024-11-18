@@ -15,6 +15,7 @@ using OneScript.StandardLibrary.XMLSchema.Enumerations;
 using OneScript.StandardLibrary.XMLSchema.Interfaces;
 using ScriptEngine.Machine;
 using ScriptEngine.Machine.Contexts;
+using OneScript.Values;
 
 namespace OneScript.StandardLibrary.XMLSchema.Objects
 {
