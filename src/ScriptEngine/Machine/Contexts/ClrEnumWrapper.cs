@@ -90,6 +90,15 @@ namespace ScriptEngine.Machine.Contexts
         {
             Instance = instance;
         }
+ 
+        protected static TE CreateInstance<TE>(ITypeManager typeManager,EnumCreationDelegate<TE> creator)
+            where TE: ClrEnumWrapper<T>
+        {
+           var instance = EnumContextHelper.CreateClrEnumInstance<TE, T>(typeManager, creator);
+ 
+           OnInstanceCreation(instance);
+           return instance;
+        }
     }
 
     public abstract class ClrEnumWrapperCached<T> : ClrEnumWrapper<T> where T : struct
@@ -111,16 +120,7 @@ namespace ScriptEngine.Machine.Contexts
         public static new ClrEnumValueWrapper<T> FromNativeValue(T native)
         {
             _valuesCache.TryGetValue(native, out ClrEnumValueWrapper<T> value);
-            return value;
-        }
-
-        public static TE CreateInstance<TE>(ITypeManager typeManager,EnumCreationDelegate<TE> creator)
-            where TE: ClrEnumWrapperCached<T>
-        {
-           var instance = EnumContextHelper.CreateClrEnumInstance<TE, T>(typeManager, creator);
- 
-           OnInstanceCreation(instance);
-           return instance;
+            return value; // TODO: исключение или null?
         }
    }
 }
