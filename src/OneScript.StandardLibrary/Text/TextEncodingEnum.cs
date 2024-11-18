@@ -141,7 +141,7 @@ namespace OneScript.StandardLibrary.Text
                 if (!(encoding.GetRawValue() is ClrEnumValueWrapper<TextEncodingValues> encValue))
                     throw RuntimeException.InvalidArgumentType();
 
-                var encodingEnum = (TextEncodingEnum)encValue.Owner;
+                var encodingEnum = GlobalsHelper.GetEnum<TextEncodingEnum>();
 
                 Encoding enc;
                 if (encValue == encodingEnum.Ansi)

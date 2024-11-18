@@ -81,11 +81,10 @@ namespace ScriptEngine.Machine.Contexts
             T value)
             where T : struct
         {
-            var wrappedValue = new ClrEnumValueWrapper<T>(owner, value); 
-            owner.AddValue(name, alias, wrappedValue);
+            var wrappedValue = new ClrEnumValueWrapper<T>(owner.ValuesType, value, name, alias); 
+            owner.AddValue(wrappedValue);
             return wrappedValue;
         }
-
     }
 
     public delegate T EnumCreationDelegate<T>(TypeDescriptor typeRepresentation, TypeDescriptor valuesType) where T : EnumerationContext;

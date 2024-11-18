@@ -5,47 +5,46 @@ was not distributed with this file, You can obtain one
 at http://mozilla.org/MPL/2.0/.
 ----------------------------------------------------------*/
 
+using OneScript.Commons;
 using OneScript.Exceptions;
+using OneScript.Localization;
 using OneScript.Types;
 using OneScript.Values;
+using System;
 
 namespace ScriptEngine.Machine.Contexts
 {
     public abstract class EnumerationValue : BslValue
     {
-        readonly EnumerationContext _owner;
+        readonly TypeDescriptor _systemType;
+        readonly string _name, _alias;
 
-        public EnumerationValue(EnumerationContext owner)
+        public EnumerationValue(TypeDescriptor systemType, string name, string alias)
         {
-            _owner = owner;
+            if (!Utils.IsValidIdentifier(name))
+                throw new ArgumentException("Name must be a valid identifier", "name");
+
+            if(alias != null && !Utils.IsValidIdentifier(alias))
+                throw new ArgumentException("Name must be a valid identifier", "alias");
+
+            _systemType = systemType;
+            _name = name;
+            _alias = alias;
         }
 
-        public EnumerationContext Owner
-        {
-            get
-            {
-                return _owner;
-            }
-        }
-
-        public string ValuePresentation
-        {
-            get;set;
-        }
+        public string Name => _name;
+        public string Alias => _alias;
 
         public bool IsFilled() => true;
 
-        public override TypeDescriptor SystemType => _owner.ValuesType;
+        public override TypeDescriptor SystemType => _systemType;
 
         public override string ToString()
         {
-            return ValuePresentation == null ? SystemType.Name : ValuePresentation;
+            return BilingualString.Localize(_name, _alias);
         }
 
-        public override IValue GetRawValue()
-        {
-            return this;
-        }
+        public override IValue GetRawValue() => this;
 
         public override int CompareTo(BslValue other)
         {
