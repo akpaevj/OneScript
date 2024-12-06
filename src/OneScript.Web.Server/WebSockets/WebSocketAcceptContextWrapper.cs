@@ -19,7 +19,7 @@ namespace OneScript.Web.Server.WebSockets
     [ContextClass("КонтекстПодключенияВебСокета", "WebSocketsAcceptContext")]
     public class WebSocketAcceptContextWrapper : AutoContext<WebSocketAcceptContextWrapper>
     {
-        internal readonly WebSocketAcceptContext _context = new WebSocketAcceptContext();
+        internal readonly WebSocketAcceptContext _context = new();
 
         /// <summary>
         /// Согласовываемый субпротокол
@@ -29,7 +29,7 @@ namespace OneScript.Web.Server.WebSockets
         {
             get
             {
-                return _context.SubProtocol == null ? BslNullValue.Instance : (IValue)BslStringValue.Create(_context.SubProtocol);
+                return _context.SubProtocol == null ? BslNullValue.Instance : BslStringValue.Create(_context.SubProtocol);
             }
             set
             {

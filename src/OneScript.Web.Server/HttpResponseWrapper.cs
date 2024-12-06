@@ -60,7 +60,7 @@ namespace OneScript.Web.Server
         }
 
         [ContextProperty("Тело", "Body", CanWrite = false)]
-        public GenericStream Body => new GenericStream(_response.Body);
+        public GenericStream Body => new(_response.Body);
 
         [ContextProperty("Заголовки", "Headers", CanWrite = false)]
         public HeaderDictionaryWrapper Headers => new HeaderDictionaryWrapper(_response.Headers);
