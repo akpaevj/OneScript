@@ -82,7 +82,7 @@ namespace OneScript.StandardLibrary.Net
                 ms.Write(readBuffer, 0, numberOfBytesRead);
                 if (useLimit)
                 {
-					limit -= numberOfBytesRead;
+                    limit -= numberOfBytesRead;
                     if (limit <= 0)
                         break;
                 }
