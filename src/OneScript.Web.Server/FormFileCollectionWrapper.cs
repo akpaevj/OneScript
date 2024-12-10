@@ -14,52 +14,52 @@ using OneScript.StandardLibrary.Collections;
 
 namespace OneScript.Web.Server
 {
-	[ContextClass("ФайлыФормы", "FormFiles")]
-	public class FormFileCollectionWrapper : AutoCollectionContext<FormFileCollectionWrapper, FormFileWrapper>
-	{
-		private readonly IFormFileCollection _items;
+    [ContextClass("ФайлыФормы", "FormFiles")]
+    public class FormFileCollectionWrapper : AutoCollectionContext<FormFileCollectionWrapper, FormFileWrapper>
+    {
+        private readonly IFormFileCollection _items;
 
-		internal FormFileCollectionWrapper(IFormFileCollection items)
-		{
-			_items = items;
-		}
+        internal FormFileCollectionWrapper(IFormFileCollection items)
+        {
+            _items = items;
+        }
 
-		public override bool IsIndexed => true;
+        public override bool IsIndexed => true;
 
-		public override IValue GetIndexedValue(IValue index)
-		{
-			var result = _items.GetFile(index.AsString());
+        public override IValue GetIndexedValue(IValue index)
+        {
+            var result = _items.GetFile(index.AsString());
 
-			if (result == null)
-				return BslNullValue.Instance;
-			else
-				return new FormFileWrapper(result);
-		}
+            if (result == null)
+                return BslNullValue.Instance;
+            else
+                return new FormFileWrapper(result);
+        }
 
-		#region ICollectionContext Members
+        #region ICollectionContext Members
 
-		[ContextMethod("Получить", "Get")]
-		public IValue Retrieve(IValue key)
-		{
-			return GetIndexedValue(key);
-		}
+        [ContextMethod("Получить", "Get")]
+        public IValue Retrieve(IValue key)
+        {
+            return GetIndexedValue(key);
+        }
 
-		[ContextMethod("Количество", "Count")]
-		public override int Count()
-		{
-			return _items.Count;
-		}
+        [ContextMethod("Количество", "Count")]
+        public override int Count()
+        {
+            return _items.Count;
+        }
 
-		#endregion
+        #endregion
 
-		#region IEnumerable<IValue> Members
+        #region IEnumerable<IValue> Members
 
-		public override IEnumerator<FormFileWrapper> GetEnumerator()
-		{
-			foreach (var item in _items)
-				yield return new FormFileWrapper(item);
-		}
+        public override IEnumerator<FormFileWrapper> GetEnumerator()
+        {
+            foreach (var item in _items)
+                yield return new FormFileWrapper(item);
+        }
 
-		#endregion
-	}
+        #endregion
+    }
 }

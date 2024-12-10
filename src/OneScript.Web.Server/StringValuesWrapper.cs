@@ -13,67 +13,67 @@ using Microsoft.Extensions.Primitives;
 
 namespace OneScript.Web.Server
 {
-	[ContextClass("СтроковыеЗначения", "StringValues")]
-	public class StringValuesWrapper : AutoCollectionContext<StringValuesWrapper, IValue>
-	{
-		private readonly StringValues _value;
+    [ContextClass("СтроковыеЗначения", "StringValues")]
+    public class StringValuesWrapper : AutoCollectionContext<StringValuesWrapper, IValue>
+    {
+        private readonly StringValues _value;
 
-		public static implicit operator StringValues(StringValuesWrapper d) => d._value;
-		public static implicit operator StringValuesWrapper(StringValues b) => new(b);
+        public static implicit operator StringValues(StringValuesWrapper d) => d._value;
+        public static implicit operator StringValuesWrapper(StringValues b) => new(b);
 
-		internal StringValuesWrapper(StringValues value) 
-		{
-			_value = value;
-		}
+        internal StringValuesWrapper(StringValues value) 
+        {
+            _value = value;
+        }
 
-		public override bool IsIndexed => true;
+        public override bool IsIndexed => true;
 
-		public override IValue GetIndexedValue(IValue index)
-		{
-			var value = (int)index.AsNumber();
+        public override IValue GetIndexedValue(IValue index)
+        {
+            var value = (int)index.AsNumber();
 
-			return ValueFactory.Create(_value[value]);
-		}
+            return ValueFactory.Create(_value[value]);
+        }
 
-		#region ICollectionContext Members
+        #region ICollectionContext Members
 
-		[ContextMethod("Получить", "Get")]
-		public IValue Retrieve(IValue key)
-		{
-			return GetIndexedValue(key);
-		}
+        [ContextMethod("Получить", "Get")]
+        public IValue Retrieve(IValue key)
+        {
+            return GetIndexedValue(key);
+        }
 
-		[ContextMethod("Количество", "Count")]
-		public override int Count()
-		{
-			return _value.Count;
-		}
+        [ContextMethod("Количество", "Count")]
+        public override int Count()
+        {
+            return _value.Count;
+        }
 
-		#endregion
+        #endregion
 
-		#region IEnumerable<IValue> Members
+        #region IEnumerable<IValue> Members
 
-		public override IEnumerator<IValue> GetEnumerator()
-		{
-			foreach (var item in _value)
-				yield return BslStringValue.Create(item);
-		}
+        public override IEnumerator<IValue> GetEnumerator()
+        {
+            foreach (var item in _value)
+                yield return BslStringValue.Create(item);
+        }
 
-		#endregion
+        #endregion
 
-		protected override string ConvertToString()
-		{
-			return _value.ToString();
-		}
+        protected override string ConvertToString()
+        {
+            return _value.ToString();
+        }
 
-		public override string ToString()
-		{
-			return _value.ToString();
-		}
+        public override string ToString()
+        {
+            return _value.ToString();
+        }
 
-		public override int GetHashCode()
-		{
-			return _value.GetHashCode();
-		}
-	}
+        public override int GetHashCode()
+        {
+            return _value.GetHashCode();
+        }
+    }
 }

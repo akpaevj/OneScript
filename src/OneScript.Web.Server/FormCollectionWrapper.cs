@@ -15,66 +15,66 @@ using Microsoft.Extensions.Primitives;
 
 namespace OneScript.Web.Server
 {
-	[ContextClass("Форма", "Form")]
-	public class FormCollectionWrapper : AutoCollectionContext<FormCollectionWrapper, KeyAndValueImpl>
-	{
-		private readonly IFormCollection _items;
+    [ContextClass("Форма", "Form")]
+    public class FormCollectionWrapper : AutoCollectionContext<FormCollectionWrapper, KeyAndValueImpl>
+    {
+        private readonly IFormCollection _items;
 
-		internal FormCollectionWrapper(IFormCollection headers)
-		{
-			_items = headers;
-		}
+        internal FormCollectionWrapper(IFormCollection headers)
+        {
+            _items = headers;
+        }
 
         public override bool IsIndexed => true;
 
-		public override StringValuesWrapper GetIndexedValue(IValue index)
-		{
-			if (_items.TryGetValue(index.AsString(), out var result))
-				return result;
-			else
-				return StringValues.Empty;
-		}
+        public override StringValuesWrapper GetIndexedValue(IValue index)
+        {
+            if (_items.TryGetValue(index.AsString(), out var result))
+                return result;
+            else
+                return StringValues.Empty;
+        }
 
-		internal bool ContainsKey(IValue key)
-		{
-			return _items.ContainsKey(key.AsString());
-		}
+        internal bool ContainsKey(IValue key)
+        {
+            return _items.ContainsKey(key.AsString());
+        }
 
-		public IEnumerable<IValue> Keys()
-		{
-			foreach (var key in _items.Keys)
-				yield return ValueFactory.Create(key);
-		}
+        public IEnumerable<IValue> Keys()
+        {
+            foreach (var key in _items.Keys)
+                yield return ValueFactory.Create(key);
+        }
 
-		#region ICollectionContext Members
+        #region ICollectionContext Members
 
-		[ContextMethod("Получить", "Get")]
-		public StringValuesWrapper Retrieve(IValue key)
-		{
-			return GetIndexedValue(key);
-		}
+        [ContextMethod("Получить", "Get")]
+        public StringValuesWrapper Retrieve(IValue key)
+        {
+            return GetIndexedValue(key);
+        }
 
-		[ContextMethod("Количество", "Count")]
-		public override int Count()
-		{
-			return _items.Count;
-		}
+        [ContextMethod("Количество", "Count")]
+        public override int Count()
+        {
+            return _items.Count;
+        }
 
-		#endregion
+        #endregion
 
-		#region IEnumerable<IValue> Members
+        #region IEnumerable<IValue> Members
 
-		public override IEnumerator<KeyAndValueImpl> GetEnumerator()
-		{
-			foreach (var item in _items)
-			{
-				yield return new KeyAndValueImpl(ValueFactory.Create(item.Key), (StringValuesWrapper)item.Value);
-			}
-		}
+        public override IEnumerator<KeyAndValueImpl> GetEnumerator()
+        {
+            foreach (var item in _items)
+            {
+                yield return new KeyAndValueImpl(ValueFactory.Create(item.Key), (StringValuesWrapper)item.Value);
+            }
+        }
 
-		#endregion
+        #endregion
 
-		[ContextProperty("Файлы", "Files", CanWrite = false)]
-		public FormFileCollectionWrapper Files => new(_items.Files);
-	}
+        [ContextProperty("Файлы", "Files", CanWrite = false)]
+        public FormFileCollectionWrapper Files => new(_items.Files);
+    }
 }

@@ -24,7 +24,7 @@ using OneScript.Types;
 
 namespace OneScript.Web.Server
 {
-	[ContextClass("HTTPСервисЗапрос", "HTTPServiceRequest")]
+    [ContextClass("HTTPСервисЗапрос", "HTTPServiceRequest")]
     public class HttpRequestWrapper : AutoContext<HttpRequestWrapper>
     {
         private readonly HttpRequest _request;
@@ -142,7 +142,7 @@ namespace OneScript.Web.Server
                     return new FormCollectionWrapper(_request.Form);
                 else
                     return BslNullValue.Instance;
-			}
+            }
         }
-	}
+    }
 }

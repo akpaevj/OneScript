@@ -306,11 +306,11 @@ namespace OneScript.Web.Server
 
         public override StringValuesWrapper GetIndexedValue(IValue index)
         {
-			if (_items.TryGetValue(index.AsString(), out var result))
-				return result;
-			else
-				return StringValues.Empty;
-		}
+            if (_items.TryGetValue(index.AsString(), out var result))
+                return result;
+            else
+                return StringValues.Empty;
+        }
 
         public override void SetIndexedValue(IValue index, IValue val)
         {
