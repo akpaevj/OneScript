@@ -49,7 +49,7 @@ namespace OneScript.Web.Server
         #region ICollectionContext Members
 
         [ContextMethod("Получить", "Get")]
-        public StringValuesWrapper Retrieve(IValue key)
+        public StringValuesWrapper Get(IValue key)
         {
             return GetIndexedValue(key);
         }

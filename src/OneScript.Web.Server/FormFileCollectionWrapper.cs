@@ -31,7 +31,7 @@ namespace OneScript.Web.Server
             var result = _items.GetFile(index.AsString());
 
             if (result == null)
-                return BslNullValue.Instance;
+                return BslUndefinedValue.Instance;
             else
                 return new FormFileWrapper(result);
         }

@@ -46,7 +46,7 @@ namespace OneScript.Web.Server
             get
             {
                 if (_response.ContentLength == null)
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
                 else
                     return BslNumericValue.Create((decimal)_response.ContentLength);
             }

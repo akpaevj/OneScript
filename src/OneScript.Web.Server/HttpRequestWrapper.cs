@@ -49,7 +49,7 @@ namespace OneScript.Web.Server
             get
             {
                 if (_request.ContentType == null)
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
                 else
                     return BslStringValue.Create(_request.ContentType);
             }
@@ -61,7 +61,7 @@ namespace OneScript.Web.Server
             get
             {
                 if (_request.ContentLength == null)
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
                 else
                     return BslNumericValue.Create((decimal)_request.ContentLength);
             }
@@ -84,7 +84,7 @@ namespace OneScript.Web.Server
                 if (_request.QueryString.HasValue)
                     return BslStringValue.Create(_request.QueryString.Value);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
         }
 
@@ -96,7 +96,7 @@ namespace OneScript.Web.Server
                 if (_request.Path.HasValue)
                     return BslStringValue.Create(_request.Path.Value);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
         }
 
@@ -108,7 +108,7 @@ namespace OneScript.Web.Server
                 if (_request.PathBase.HasValue)
                     return BslStringValue.Create(_request.PathBase);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
         }
 
@@ -120,7 +120,7 @@ namespace OneScript.Web.Server
                 if (_request.Host.HasValue)
                     return BslStringValue.Create(_request.Host.Value);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
         }
 
@@ -141,7 +141,7 @@ namespace OneScript.Web.Server
                 if (_request.HasFormContentType)
                     return new FormCollectionWrapper(_request.Form);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
         }
     }
