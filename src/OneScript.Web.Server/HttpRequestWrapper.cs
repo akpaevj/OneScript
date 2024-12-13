@@ -20,6 +20,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using OneScript.StandardLibrary.Collections;
+using OneScript.Types;
 
 namespace OneScript.Web.Server
 {
@@ -40,7 +41,7 @@ namespace OneScript.Web.Server
         public IValue HasFormContentType => BslBooleanValue.Create(_request.HasFormContentType);
 
         [ContextProperty("Тело", "Body", CanWrite = false)]
-        public GenericStream Body => new GenericStream(_request.Body);
+        public GenericStream Body => new(_request.Body);
 
         [ContextProperty("ТипКонтента", "ContentType", CanWrite = false)]
         public IValue ContentType
@@ -48,7 +49,7 @@ namespace OneScript.Web.Server
             get
             {
                 if (_request.ContentType == null)
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
                 else
                     return BslStringValue.Create(_request.ContentType);
             }
@@ -60,17 +61,17 @@ namespace OneScript.Web.Server
             get
             {
                 if (_request.ContentLength == null)
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
                 else
                     return BslNumericValue.Create((decimal)_request.ContentLength);
             }
         }
 
         [ContextProperty("Куки", "Cookie", CanWrite = false)]
-        public RequestCookieCollectionWrapper Cookies => new RequestCookieCollectionWrapper(_request.Cookies);
+        public RequestCookieCollectionWrapper Cookies => new(_request.Cookies);
 
         [ContextProperty("Заголовки", "Headers", CanWrite = false)]
-        public HeaderDictionaryWrapper Headers => new HeaderDictionaryWrapper(_request.Headers);
+        public HeaderDictionaryWrapper Headers => new(_request.Headers);
 
         [ContextProperty("Протокол", "Protocol", CanWrite = false)]
         public IValue Protocol => BslStringValue.Create(_request.Protocol);
@@ -83,7 +84,7 @@ namespace OneScript.Web.Server
                 if (_request.QueryString.HasValue)
                     return BslStringValue.Create(_request.QueryString.Value);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
         }
 
@@ -95,7 +96,7 @@ namespace OneScript.Web.Server
                 if (_request.Path.HasValue)
                     return BslStringValue.Create(_request.Path.Value);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
         }
 
@@ -107,7 +108,7 @@ namespace OneScript.Web.Server
                 if (_request.PathBase.HasValue)
                     return BslStringValue.Create(_request.PathBase);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
         }
 
@@ -119,7 +120,7 @@ namespace OneScript.Web.Server
                 if (_request.Host.HasValue)
                     return BslStringValue.Create(_request.Host.Value);
                 else
-                    return BslNullValue.Instance;
+                    return BslUndefinedValue.Instance;
             }
         }
 
@@ -131,5 +132,17 @@ namespace OneScript.Web.Server
 
         [ContextProperty("Метод", "Method", CanWrite = false)]
         public IValue Method => BslStringValue.Create(_request.Method);
+
+        [ContextProperty("Форма", "Form", CanWrite = false)]
+        public IValue Form
+        {
+            get
+            {
+                if (_request.HasFormContentType)
+                    return new FormCollectionWrapper(_request.Form);
+                else
+                    return BslUndefinedValue.Instance;
+            }
+        }
     }
 }
